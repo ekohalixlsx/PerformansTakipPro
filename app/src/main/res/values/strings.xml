@@ -1,0 +1,80 @@
+<resources>
+    <string name="app_name">Performans Takip Pro</string>
+    
+    <!-- Navigation -->
+    <string name="nav_entry">Kayıt</string>
+    <string name="nav_history">Geçmiş</string>
+    <string name="nav_settings">Ayarlar</string>
+    <string name="nav_dashboard">Dashboard</string>
+    
+    <!-- Entry Screen -->
+    <string name="entry_title">Performans Kaydı</string>
+    <string name="entry_date">Tarih</string>
+    <string name="entry_employee">Personel</string>
+    <string name="entry_employee_id">ID</string>
+    <string name="entry_department">Bölüm</string>
+    <string name="entry_department_auto">Otomatik</string>
+    <string name="entry_work_type">İş Türü</string>
+    <string name="entry_quantity">Miktar</string>
+    <string name="entry_unit">Birim</string>
+    <string name="entry_unit_auto">Otomatik</string>
+    <string name="entry_save">Kaydet</string>
+    <string name="entry_save_success">Kayıt başarıyla eklendi!</string>
+    <string name="entry_save_error">Kayıt eklenemedi. Tekrar deneyin.</string>
+    <string name="entry_validation_employee">Lütfen personel seçiniz</string>
+    <string name="entry_validation_work_type">Lütfen iş türü seçiniz</string>
+    <string name="entry_validation_quantity">Lütfen miktar giriniz</string>
+    <string name="entry_search_placeholder">Ara…</string>
+    
+    <!-- History Screen -->
+    <string name="history_title">Son Kayıtlar</string>
+    <string name="history_subtitle">Son 33 gün</string>
+    <string name="history_today">Bugün</string>
+    <string name="history_yesterday">Dün</string>
+    <string name="history_edit">Düzenle</string>
+    <string name="history_delete">Sil</string>
+    <string name="history_delete_confirm">Bu kaydı silmek istediğinize emin misiniz?</string>
+    <string name="history_empty">Henüz kayıt bulunamadı</string>
+    <string name="history_no">Hayır</string>
+    <string name="history_yes">Evet</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_subtitle">Kullanıcı &amp; Yönetici</string>
+    <string name="settings_user">Kullanıcı Ayarları</string>
+    <string name="settings_selected_employee">Seçili Personel</string>
+    <string name="settings_default_work_type">Varsayılan İş Türü</string>
+    <string name="settings_notifications">Bildirimler</string>
+    <string name="settings_notification_time">Bildirim Zamanı</string>
+    <string name="settings_daily_reminder">Günlük Hatırlatıcı</string>
+    <string name="settings_admin_panel">Yönetici Paneli</string>
+    <string name="settings_admin_login">Yönetici Girişi</string>
+    <string name="settings_admin_desc">Performans raporları ve ekip analitiklerine erişmek için Google hesabınızla giriş yapın.</string>
+    <string name="settings_google_login">Google ile Giriş Yap</string>
+    <string name="settings_app_version">Uygulama Sürümü</string>
+    <string name="settings_company">Şirket</string>
+    <string name="settings_company_default">EKOMAKHALI</string>
+    <string name="settings_language">Dil</string>
+    <string name="settings_language_tr">Türkçe</string>
+    <string name="settings_language_en">English</string>
+    
+    <!-- Dashboard Screen -->
+    <string name="dashboard_title">Performans</string>
+    <string name="dashboard_daily">Günlük</string>
+    <string name="dashboard_weekly">Haftalık</string>
+    <string name="dashboard_monthly">Aylık</string>
+    <string name="dashboard_total">Toplam</string>
+    <string name="dashboard_average">Ortalama</string>
+    <string name="dashboard_highest">En Yüksek</string>
+    <string name="dashboard_pdf">PDF</string>
+    <string name="dashboard_export_pdf">PDF Dışa Aktar</string>
+    
+    <!-- Common -->
+    <string name="loading">Yükleniyor…</string>
+    <string name="error_network">İnternet bağlantısı bulunamadı</string>
+    <string name="error_general">Bir hata oluştu</string>
+    <string name="retry">Tekrar Dene</string>
+    <string name="cancel">İptal</string>
+    <string name="ok">Tamam</string>
+    <string name="select">Seç</string>
+</resources>

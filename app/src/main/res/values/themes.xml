@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.PerformansTakipPro" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#1A1F36</item>
+        <item name="colorPrimaryVariant">#00C2A8</item>
+        <item name="colorSecondary">#00C2A8</item>
+        <item name="android:statusBarColor">#1A1F36</item>
+        <item name="android:navigationBarColor">#1A1F36</item>
+    </style>
+</resources>
