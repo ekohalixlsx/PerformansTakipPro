@@ -5,10 +5,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
@@ -32,6 +32,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.*
 import com.ekomak.performanstakippro.R
 import com.ekomak.performanstakippro.ui.MainViewModel
 import com.ekomak.performanstakippro.ui.screens.dashboard.DashboardScreen
@@ -39,7 +42,6 @@ import com.ekomak.performanstakippro.ui.screens.entry.EntryScreen
 import com.ekomak.performanstakippro.ui.screens.history.HistoryScreen
 import com.ekomak.performanstakippro.ui.screens.settings.SettingsScreen
 import com.ekomak.performanstakippro.ui.theme.*
-import kotlinx.coroutines.launch
 
 sealed class Screen(
     val route: String,
@@ -61,22 +63,19 @@ val bottomNavItems = listOf(
     Screen.Dashboard,
 )
 
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun AppNavigation() {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
     val viewModel: MainViewModel = viewModel()
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = 0) { bottomNavItems.size }
-
-    var showAboutScreen by remember { mutableStateOf(false) }
 
     // Bildirim izni — tek seferlik
     val prefs = context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ ->
-        // İzin sonucu ne olursa olsun, bir daha sorma
         prefs.edit().putBoolean("notification_permission_asked", true).apply()
     }
 
@@ -92,85 +91,91 @@ fun AppNavigation() {
         }
     }
 
-    // About ekranı ayrı gösterilir (pager dışında)
-    if (showAboutScreen) {
-        com.ekomak.performanstakippro.ui.screens.settings.AboutScreen(
-            viewModel = viewModel,
-            onNavigateBack = { showAboutScreen = false }
-        )
-        return
-    }
-
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = Primary,
-                contentColor = TextOnPrimary,
-                tonalElevation = 0.dp,
-                modifier = Modifier
-                    .shadow(24.dp)
-                    .navigationBarsPadding()
-                    .height(64.dp)
-            ) {
-                bottomNavItems.forEachIndexed { index, screen ->
-                    val selected = pagerState.currentPage == index
+            val showBottomBar = currentDestination?.route != Screen.About.route
+            if (showBottomBar) {
+                NavigationBar(
+                    containerColor = Primary,
+                    contentColor = TextOnPrimary,
+                    tonalElevation = 0.dp,
+                    modifier = Modifier
+                        .shadow(24.dp)
+                        .navigationBarsPadding()
+                        .height(64.dp)
+                ) {
+                    bottomNavItems.forEach { screen ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
 
-                    NavigationBarItem(
-                        icon = {
-                            Box(contentAlignment = Alignment.Center) {
-                                if (selected) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .background(Accent.copy(alpha = 0.15f))
+                        NavigationBarItem(
+                            icon = {
+                                Box(contentAlignment = Alignment.Center) {
+                                    if (selected) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(Accent.copy(alpha = 0.15f))
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = if (selected) screen.selectedIcon!! else screen.unselectedIcon!!,
+                                        contentDescription = stringResource(screen.titleRes!!),
+                                        modifier = Modifier.size(22.dp)
                                     )
                                 }
-                                Icon(
-                                    imageVector = if (selected) screen.selectedIcon!! else screen.unselectedIcon!!,
-                                    contentDescription = stringResource(screen.titleRes!!),
-                                    modifier = Modifier.size(22.dp)
+                            },
+                            label = {
+                                Text(
+                                    text = stringResource(screen.titleRes!!),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    maxLines = 1
                                 )
-                            }
-                        },
-                        label = {
-                            Text(
-                                text = stringResource(screen.titleRes!!),
-                                style = MaterialTheme.typography.labelSmall,
-                                maxLines = 1
+                            },
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Accent,
+                                selectedTextColor = Accent,
+                                unselectedIconColor = TextOnPrimary.copy(alpha = 0.6f),
+                                unselectedTextColor = TextOnPrimary.copy(alpha = 0.6f),
+                                indicatorColor = Color.Transparent
                             )
-                        },
-                        selected = selected,
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Accent,
-                            selectedTextColor = Accent,
-                            unselectedIconColor = TextOnPrimary.copy(alpha = 0.6f),
-                            unselectedTextColor = TextOnPrimary.copy(alpha = 0.6f),
-                            indicatorColor = Color.Transparent
                         )
-                    )
+                    }
                 }
             }
         }
     ) { innerPadding ->
-        HorizontalPager(
-            state = pagerState,
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Entry.route,
             modifier = Modifier.padding(innerPadding),
-            beyondViewportPageCount = 1
-        ) { page ->
-            when (page) {
-                0 -> EntryScreen(viewModel)
-                1 -> HistoryScreen(viewModel)
-                2 -> SettingsScreen(
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) {
+            composable(Screen.Entry.route) { EntryScreen(viewModel) }
+            composable(Screen.History.route) { HistoryScreen(viewModel) }
+            composable(Screen.Settings.route) {
+                SettingsScreen(
                     viewModel = viewModel,
-                    onNavigateToAbout = { showAboutScreen = true }
+                    onNavigateToAbout = { navController.navigate(Screen.About.route) }
                 )
-                3 -> DashboardScreen(viewModel)
+            }
+            composable(Screen.Dashboard.route) { DashboardScreen(viewModel) }
+            composable(Screen.About.route) {
+                com.ekomak.performanstakippro.ui.screens.settings.AboutScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }

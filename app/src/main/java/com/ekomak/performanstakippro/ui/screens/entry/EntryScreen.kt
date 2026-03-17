@@ -433,12 +433,13 @@ fun EntryScreen(viewModel: MainViewModel) {
                     OutlinedTextField(
                         value = quantity,
                         onValueChange = { newValue ->
-                            val cleaned = newValue.replace(".", ",")
-                            if (cleaned.isEmpty() || cleaned.matches(Regex("^\\d*,?\\d*$"))) {
-                                quantity = cleaned
+                            // Nokta (.) kabul etme, sadece virgül (,) ondalık ayracı
+                            val filtered = newValue.replace(".", "")
+                            if (filtered.isEmpty() || filtered.matches(Regex("^\\d*,?\\d*$"))) {
+                                quantity = filtered
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        modifier = Modifier.fillMaxWidth().height(62.dp),
                         textStyle = MaterialTheme.typography.headlineLarge.copy(
                             textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 26.sp
                         ),
