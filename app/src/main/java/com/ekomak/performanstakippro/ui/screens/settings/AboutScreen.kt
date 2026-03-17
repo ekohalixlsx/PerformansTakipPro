@@ -83,9 +83,9 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
                     shadowElevation = 8.dp
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        painter = painterResource(id = R.mipmap.ic_launcher),
                         contentDescription = null,
-                        tint = Accent,
+                        tint = Color.Unspecified,
                         modifier = Modifier.padding(16.dp).fillMaxSize()
                     )
                 }

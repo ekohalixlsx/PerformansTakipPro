@@ -22,6 +22,15 @@ val DangerLight = Color(0xFFFEE2E2)
 val WarningBase = Color(0xFFF5A623)
 val WarningLight = Color(0xFFFEF3C7)
 
+// Dark Theme Colors
+val DarkBackground = Color(0xFF0F1425)
+val DarkSurface = Color(0xFF1A1F36)
+val DarkSurfaceVariant = Color(0xFF252B45)
+val DarkCardBackground = Color(0xFF1E2540)
+val DarkTextPrimary = Color(0xFFF4F6FA)
+val DarkTextSecondary = Color(0xFF9CA3AF)
+val DarkBorder = Color(0xFF374151)
+
 // Dynamic Color Provider
 object AppColors {
     var isDark = false
