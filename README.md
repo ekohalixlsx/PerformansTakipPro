@@ -24,8 +24,6 @@ Uygulamanın çalışması için kendi Google E-Tablonuzu bağlamanız gerekir.
 2. **Apps Script:** `Proje Bilgileri/Google_Apps_Script.js` içindeki kodu kopyalayın ve E-Tablonuzun **Uzantılar -> Apps Script** alanına yapıştırıp "Web Uygulaması" (Herkes erişebilir) olarak dağıtın.
 3. **Uygulamaya Bağlayın:** Çıkan URL'yi, uygulamanızın Ayarlar kısmındaki veya `AppConfig.kt` içindeki ilgili alana ekleyin.
 
-Detaylı kurulum rehberi için: [Google_Sheets_Kurulum_Rehberi.md](Proje%20Bilgileri/Google_Sheets_Kurulum_Rehberi.md)
-
 ## 🎨 Tasarım Sistemi
 
 Uygulama, Jetpack Compose ile **Material 3** standartlarına uygun, fakat tamamen özelleştirilmiş, modern "Deep Navy" ve "Teal" kontrastı kullanılarak tasarlanmıştır. Akıcı sayfa geçişleri, yumuşak gölgeler (shadows) ve pürüzsüz micro-animasyonlar barındırır.
