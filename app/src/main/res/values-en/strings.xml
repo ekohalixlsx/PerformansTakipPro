@@ -77,6 +77,11 @@
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="select">Select</string>
+    <string name="all_employees">All Employees</string>
+    <string name="connection_status">Connection Status</string>
+    <string name="connected">Connected</string>
+    <string name="not_connected">Not Connected</string>
+    <string name="db_connection">Database connection</string>
 
     <!-- About Screen -->
     <string name="about_title">About</string>

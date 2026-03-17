@@ -77,6 +77,11 @@
     <string name="cancel">İptal</string>
     <string name="ok">Tamam</string>
     <string name="select">Seç</string>
+    <string name="all_employees">Tüm Personel</string>
+    <string name="connection_status">Bağlantı Durumu</string>
+    <string name="connected">Bağlı</string>
+    <string name="not_connected">Bağlı değil</string>
+    <string name="db_connection">Veri tabanı bağlantısı</string>
 
     <!-- About Screen -->
     <string name="about_title">Hakkında</string>

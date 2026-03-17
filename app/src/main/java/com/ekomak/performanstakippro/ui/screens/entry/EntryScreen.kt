@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,34 +26,196 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ekomak.performanstakippro.R
+import com.ekomak.performanstakippro.data.model.Employee
+import com.ekomak.performanstakippro.data.model.WorkType
+import com.ekomak.performanstakippro.ui.MainViewModel
 import com.ekomak.performanstakippro.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EntryScreen() {
+fun EntryScreen(viewModel: MainViewModel) {
+    val employees by viewModel.employees.collectAsState()
+    val workTypes by viewModel.workTypes.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
     var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
-    var selectedEmployeeName by remember { mutableStateOf("") }
-    var selectedEmployeeId by remember { mutableStateOf("") }
-    var selectedDepartment by remember { mutableStateOf("") }
-    var selectedWorkType by remember { mutableStateOf("") }
+    var selectedEmployee by remember { mutableStateOf<Employee?>(null) }
+    var selectedWorkType by remember { mutableStateOf<WorkType?>(null) }
     var quantity by remember { mutableStateOf("") }
-    var unit by remember { mutableStateOf("") }
-    var showEmployeeDropdown by remember { mutableStateOf(false) }
-    var showWorkTypeDropdown by remember { mutableStateOf(false) }
+    var showEmployeeSheet by remember { mutableStateOf(false) }
+    var showWorkTypeSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var saveSuccess by remember { mutableStateOf(false) }
+    var saveError by remember { mutableStateOf<String?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
+    var employeeSearch by remember { mutableStateOf("") }
 
     val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("tr"))
+    val saveDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale("tr"))
     val scrollState = rememberScrollState()
 
-    // Success animation
-    val successScale by animateFloatAsState(
-        targetValue = if (saveSuccess) 1.1f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "successScale"
-    )
+    // Date Picker Dialog
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate.timeInMillis
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        selectedDate = Calendar.getInstance().apply { timeInMillis = it }
+                    }
+                    showDatePicker = false
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // Employee Bottom Sheet
+    if (showEmployeeSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showEmployeeSheet = false; employeeSearch = "" },
+            containerColor = CardBackground,
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Text(
+                    text = stringResource(R.string.entry_employee).uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                OutlinedTextField(
+                    value = employeeSearch,
+                    onValueChange = { employeeSearch = it },
+                    placeholder = { Text(stringResource(R.string.entry_search_placeholder)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    leadingIcon = { Icon(Icons.Outlined.Search, null, tint = TextSecondary) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Accent,
+                        unfocusedBorderColor = Border
+                    )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val filtered = employees.filter {
+                    employeeSearch.isEmpty() ||
+                    it.adSoyad.contains(employeeSearch, ignoreCase = true) ||
+                    it.personelId.toString().contains(employeeSearch)
+                }
+
+                if (filtered.isEmpty()) {
+                    Text(
+                        text = if (isLoading) stringResource(R.string.loading) else "Personel bulunamadı",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(vertical = 24.dp).fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                filtered.forEach { emp ->
+                    Surface(
+                        onClick = {
+                            selectedEmployee = emp
+                            showEmployeeSheet = false
+                            employeeSearch = ""
+                        },
+                        color = if (selectedEmployee?.personelId == emp.personelId)
+                            Accent.copy(alpha = 0.08f) else Color.Transparent,
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(Accent.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(emp.initials, color = Accent, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(emp.adSoyad, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, fontWeight = FontWeight.Medium)
+                                Text(emp.bolumAdi, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                            }
+                            Text(
+                                emp.personelId.toString(),
+                                style = MaterialTheme.typography.labelMedium.copy(fontFamily = JetBrainsMono),
+                                color = TextSecondary
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    }
+
+    // Work Type Bottom Sheet
+    if (showWorkTypeSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showWorkTypeSheet = false },
+            containerColor = CardBackground,
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Text(
+                    text = stringResource(R.string.entry_work_type).uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                workTypes.forEach { wt ->
+                    Surface(
+                        onClick = {
+                            selectedWorkType = wt
+                            showWorkTypeSheet = false
+                        },
+                        color = if (selectedWorkType?.islemId == wt.islemId)
+                            Accent.copy(alpha = 0.08f) else Color.Transparent,
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Outlined.Construction, null, tint = Accent, modifier = Modifier.size(22.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(wt.islemAdi, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, modifier = Modifier.weight(1f))
+                            Surface(color = Accent.copy(alpha = 0.1f), shape = RoundedCornerShape(6.dp)) {
+                                Text(wt.birim, style = MaterialTheme.typography.labelSmall, color = Accent,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -68,12 +231,8 @@ fun EntryScreen() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Primary, PrimaryLight)
-                        )
-                    )
-                    .padding(top = 48.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
+                    .background(Brush.verticalGradient(listOf(Primary, PrimaryLight)))
+                    .padding(top = 48.dp, bottom = 16.dp, start = 20.dp, end = 20.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -93,25 +252,18 @@ fun EntryScreen() {
                             color = TextOnPrimary.copy(alpha = 0.7f)
                         )
                     }
-
-                    // Avatar initials
+                    // App icon
                     Box(
                         modifier = Modifier
                             .size(44.dp)
-                            .clip(CircleShape)
-                            .background(Accent),
+                            .clip(CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = if (selectedEmployeeName.isNotEmpty()) {
-                                selectedEmployeeName.split(" ")
-                                    .take(2)
-                                    .mapNotNull { it.firstOrNull()?.uppercase() }
-                                    .joinToString("")
-                            } else "PT",
-                            color = TextOnAccent,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                        Icon(
+                            painter = painterResource(id = R.mipmap.ic_launcher),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(44.dp)
                         )
                     }
                 }
@@ -121,23 +273,18 @@ fun EntryScreen() {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
                     .shadow(8.dp, RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                colors = CardDefaults.cardColors(containerColor = CardBackground)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Date Field
-                    Text(
-                        text = stringResource(R.string.entry_date).uppercase(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TextSecondary,
-                        letterSpacing = 1.sp
-                    )
+                    Text(stringResource(R.string.entry_date).uppercase(),
+                        style = MaterialTheme.typography.labelMedium, color = TextSecondary, letterSpacing = 1.sp)
                     OutlinedCard(
                         onClick = { showDatePicker = true },
                         shape = RoundedCornerShape(12.dp),
@@ -145,137 +292,84 @@ fun EntryScreen() {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                Icons.Outlined.CalendarMonth,
-                                contentDescription = null,
-                                tint = Accent,
-                                modifier = Modifier.size(22.dp)
-                            )
+                            Icon(Icons.Outlined.CalendarMonth, null, tint = Accent, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = dateFormat.format(selectedDate.time),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextPrimary
-                            )
+                            Text(dateFormat.format(selectedDate.time), style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
                             Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                Icons.Filled.ArrowDropDown,
-                                contentDescription = null,
-                                tint = TextSecondary
-                            )
+                            Icon(Icons.Filled.ArrowDropDown, null, tint = TextSecondary)
                         }
                     }
 
                     HorizontalDivider(color = Divider, thickness = 0.5.dp)
 
                     // Employee Selection
-                    Text(
-                        text = stringResource(R.string.entry_employee).uppercase(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TextSecondary,
-                        letterSpacing = 1.sp
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    Text(stringResource(R.string.entry_employee).uppercase(),
+                        style = MaterialTheme.typography.labelMedium, color = TextSecondary, letterSpacing = 1.sp)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedCard(
-                            onClick = { showEmployeeDropdown = true },
+                            onClick = { showEmployeeSheet = true },
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, if (showEmployeeDropdown) Accent else Border),
+                            border = BorderStroke(1.dp, if (showEmployeeSheet) Accent else Border),
                             modifier = Modifier.weight(1f)
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = selectedEmployeeName.ifEmpty { stringResource(R.string.select) },
+                                    text = selectedEmployee?.adSoyad ?: stringResource(R.string.select),
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = if (selectedEmployeeName.isEmpty()) TextSecondary else TextPrimary,
+                                    color = if (selectedEmployee == null) TextSecondary else TextPrimary,
                                     modifier = Modifier.weight(1f)
                                 )
-                                Icon(
-                                    Icons.Filled.ArrowDropDown,
-                                    contentDescription = null,
-                                    tint = TextSecondary
-                                )
+                                Icon(Icons.Filled.ArrowDropDown, null, tint = TextSecondary)
                             }
                         }
-
-                        // ID Display
                         OutlinedCard(
                             shape = RoundedCornerShape(12.dp),
                             border = BorderStroke(1.dp, Border),
-                            colors = CardDefaults.outlinedCardColors(
-                                containerColor = SurfaceVariant
-                            )
+                            colors = CardDefaults.outlinedCardColors(containerColor = SurfaceVariant)
                         ) {
                             Column(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                                Text(stringResource(R.string.entry_employee_id), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                                 Text(
-                                    text = stringResource(R.string.entry_employee_id),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = TextSecondary
-                                )
-                                Text(
-                                    text = selectedEmployeeId.ifEmpty { "—" },
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontFamily = JetBrainsMono
-                                    ),
-                                    color = TextPrimary,
-                                    fontWeight = FontWeight.SemiBold
+                                    text = selectedEmployee?.personelId?.toString() ?: "—",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontFamily = JetBrainsMono),
+                                    color = TextPrimary, fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
                     }
 
                     // Department (auto)
-                    Text(
-                        text = stringResource(R.string.entry_department).uppercase(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TextSecondary,
-                        letterSpacing = 1.sp
-                    )
+                    Text(stringResource(R.string.entry_department).uppercase(),
+                        style = MaterialTheme.typography.labelMedium, color = TextSecondary, letterSpacing = 1.sp)
                     OutlinedCard(
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, Border),
-                        colors = CardDefaults.outlinedCardColors(
-                            containerColor = SurfaceVariant
-                        ),
+                        colors = CardDefaults.outlinedCardColors(containerColor = SurfaceVariant),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = selectedDepartment.ifEmpty { "—" },
+                                text = selectedEmployee?.bolumAdi ?: "—",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = if (selectedDepartment.isEmpty()) TextSecondary else TextPrimary
+                                color = if (selectedEmployee == null) TextSecondary else TextPrimary
                             )
-                            Surface(
-                                color = Accent.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(6.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.entry_department_auto),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Accent,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
+                            Surface(color = Accent.copy(alpha = 0.1f), shape = RoundedCornerShape(6.dp)) {
+                                Text(stringResource(R.string.entry_department_auto),
+                                    style = MaterialTheme.typography.labelSmall, color = Accent,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
                             }
                         }
                     }
@@ -283,108 +377,76 @@ fun EntryScreen() {
                     HorizontalDivider(color = Divider, thickness = 0.5.dp)
 
                     // Work Type Selection
-                    Text(
-                        text = stringResource(R.string.entry_work_type).uppercase(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TextSecondary,
-                        letterSpacing = 1.sp
-                    )
+                    Text(stringResource(R.string.entry_work_type).uppercase(),
+                        style = MaterialTheme.typography.labelMedium, color = TextSecondary, letterSpacing = 1.sp)
                     OutlinedCard(
-                        onClick = { showWorkTypeDropdown = true },
+                        onClick = { showWorkTypeSheet = true },
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, if (showWorkTypeDropdown) Accent else Border),
+                        border = BorderStroke(1.dp, if (showWorkTypeSheet) Accent else Border),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = selectedWorkType.ifEmpty { stringResource(R.string.select) },
+                                text = selectedWorkType?.islemAdi ?: stringResource(R.string.select),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = if (selectedWorkType.isEmpty()) TextSecondary else TextPrimary,
+                                color = if (selectedWorkType == null) TextSecondary else TextPrimary,
                                 modifier = Modifier.weight(1f)
                             )
-                            Icon(
-                                Icons.Filled.ArrowDropDown,
-                                contentDescription = null,
-                                tint = TextSecondary
-                            )
+                            Icon(Icons.Filled.ArrowDropDown, null, tint = TextSecondary)
                         }
                     }
 
                     // Quantity Input
-                    Text(
-                        text = stringResource(R.string.entry_quantity).uppercase(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TextSecondary,
-                        letterSpacing = 1.sp
-                    )
+                    Text(stringResource(R.string.entry_quantity).uppercase(),
+                        style = MaterialTheme.typography.labelMedium, color = TextSecondary, letterSpacing = 1.sp)
                     OutlinedTextField(
                         value = quantity,
                         onValueChange = { newValue ->
-                            if (newValue.isEmpty() || newValue.matches(Regex("^\\d*[,.]?\\d*$"))) {
-                                quantity = newValue
+                            // Noktayı virgüle çevir, sadece virgülle ondalık izin ver
+                            val cleaned = newValue.replace(".", ",")
+                            if (cleaned.isEmpty() || cleaned.matches(Regex("^\\d*,?\\d*$"))) {
+                                quantity = cleaned
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(72.dp),
+                        modifier = Modifier.fillMaxWidth().height(64.dp),
                         textStyle = MaterialTheme.typography.displayLarge.copy(
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 36.sp
+                            textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 32.sp
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Accent,
-                            unfocusedBorderColor = Border,
-                            cursorColor = Accent,
-                            focusedContainerColor = Accent.copy(alpha = 0.03f),
+                            focusedBorderColor = Accent, unfocusedBorderColor = Border,
+                            cursorColor = Accent, focusedContainerColor = Accent.copy(alpha = 0.03f)
                         )
                     )
 
                     // Unit (auto)
-                    Text(
-                        text = stringResource(R.string.entry_unit).uppercase(),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TextSecondary,
-                        letterSpacing = 1.sp
-                    )
+                    Text(stringResource(R.string.entry_unit).uppercase(),
+                        style = MaterialTheme.typography.labelMedium, color = TextSecondary, letterSpacing = 1.sp)
                     OutlinedCard(
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, Border),
-                        colors = CardDefaults.outlinedCardColors(
-                            containerColor = SurfaceVariant
-                        ),
+                        colors = CardDefaults.outlinedCardColors(containerColor = SurfaceVariant),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = unit.ifEmpty { "—" },
+                                text = selectedWorkType?.birim ?: "—",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = if (unit.isEmpty()) TextSecondary else TextPrimary
+                                color = if (selectedWorkType == null) TextSecondary else TextPrimary
                             )
-                            Surface(
-                                color = Accent.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(6.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.entry_unit_auto),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Accent,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
+                            Surface(color = Accent.copy(alpha = 0.1f), shape = RoundedCornerShape(6.dp)) {
+                                Text(stringResource(R.string.entry_unit_auto),
+                                    style = MaterialTheme.typography.labelSmall, color = Accent,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
                             }
                         }
                     }
@@ -394,75 +456,93 @@ fun EntryScreen() {
             // Save Button
             Button(
                 onClick = {
-                    // TODO: Implement save logic with SheetsService
-                    saveSuccess = true
+                    val emp = selectedEmployee
+                    val wt = selectedWorkType
+                    val miktarStr = quantity.replace(",", ".")
+                    val miktarVal = miktarStr.toDoubleOrNull()
+
+                    if (emp == null || wt == null || miktarVal == null || miktarVal <= 0) {
+                        saveError = "Lütfen tüm alanları doldurunuz"
+                        return@Button
+                    }
+
+                    isSaving = true
+                    viewModel.saveRecord(
+                        tarih = saveDateFormat.format(selectedDate.time),
+                        employee = emp,
+                        workType = wt,
+                        miktar = miktarVal,
+                        onSuccess = {
+                            isSaving = false
+                            saveSuccess = true
+                            // Formu sıfırla
+                            quantity = ""
+                        },
+                        onError = { msg ->
+                            isSaving = false
+                            saveError = msg
+                        }
+                    )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp)
-                    .height(56.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .height(52.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Accent,
-                    contentColor = TextOnAccent
-                ),
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 6.dp,
-                    pressedElevation = 2.dp
-                )
+                enabled = !isSaving,
+                colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = TextOnAccent),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 2.dp)
             ) {
-                Icon(
-                    Icons.Filled.Check,
-                    contentDescription = null,
-                    modifier = Modifier.size(22.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.entry_save),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                if (isSaving) {
+                    CircularProgressIndicator(modifier = Modifier.size(22.dp), color = TextOnAccent, strokeWidth = 2.dp)
+                } else {
+                    Icon(Icons.Filled.Check, null, modifier = Modifier.size(22.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.entry_save), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
-        // Success Snackbar animation
+        // Success Snackbar
         AnimatedVisibility(
             visible = saveSuccess,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp)
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
         ) {
             LaunchedEffect(saveSuccess) {
-                if (saveSuccess) {
-                    kotlinx.coroutines.delay(2000)
-                    saveSuccess = false
+                if (saveSuccess) { kotlinx.coroutines.delay(2000); saveSuccess = false }
+            }
+            Surface(color = Success, shape = RoundedCornerShape(12.dp), shadowElevation = 8.dp,
+                modifier = Modifier.padding(horizontal = 24.dp)) {
+                Row(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.CheckCircle, null, tint = Color.White)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.entry_save_success), color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
                 }
             }
-            Surface(
-                color = Success,
-                shape = RoundedCornerShape(12.dp),
-                shadowElevation = 8.dp,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Filled.CheckCircle,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
+        }
+
+        // Error Snackbar
+        AnimatedVisibility(
+            visible = saveError != null,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
+        ) {
+            LaunchedEffect(saveError) {
+                if (saveError != null) { kotlinx.coroutines.delay(3000); saveError = null }
+            }
+            Surface(color = Danger, shape = RoundedCornerShape(12.dp), shadowElevation = 8.dp,
+                modifier = Modifier.padding(horizontal = 24.dp)) {
+                Row(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Error, null, tint = Color.White)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.entry_save_success),
-                        color = Color.White,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text(saveError ?: "", color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
                 }
             }
         }

@@ -25,10 +25,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.ekomak.performanstakippro.R
+import com.ekomak.performanstakippro.ui.MainViewModel
 import com.ekomak.performanstakippro.ui.screens.dashboard.DashboardScreen
 import com.ekomak.performanstakippro.ui.screens.entry.EntryScreen
 import com.ekomak.performanstakippro.ui.screens.history.HistoryScreen
@@ -62,27 +64,20 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val viewModel: MainViewModel = viewModel()
 
     Scaffold(
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Primary.copy(alpha = 0.05f)),
-                            startY = 0f,
-                            endY = 20f
-                        )
-                    )
-            ) {
+            // Hakkında ekranında bottom bar gösterme
+            val showBottomBar = currentDestination?.route != Screen.About.route
+            if (showBottomBar) {
                 NavigationBar(
                     containerColor = Primary,
                     contentColor = TextOnPrimary,
                     tonalElevation = 0.dp,
                     modifier = Modifier
                         .shadow(24.dp)
-                        .height(72.dp)
+                        .height(64.dp)
                 ) {
                     bottomNavItems.forEach { screen ->
                         val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
@@ -93,22 +88,23 @@ fun AppNavigation() {
                                     if (selected) {
                                         Box(
                                             modifier = Modifier
-                                                .size(40.dp)
-                                                .clip(RoundedCornerShape(12.dp))
+                                                .size(36.dp)
+                                                .clip(RoundedCornerShape(10.dp))
                                                 .background(Accent.copy(alpha = 0.15f))
                                         )
                                     }
                                     Icon(
                                         imageVector = if (selected) screen.selectedIcon!! else screen.unselectedIcon!!,
                                         contentDescription = stringResource(screen.titleRes!!),
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(22.dp)
                                     )
                                 }
                             },
                             label = {
                                 Text(
                                     text = stringResource(screen.titleRes!!),
-                                    style = MaterialTheme.typography.labelSmall
+                                    style = MaterialTheme.typography.labelSmall,
+                                    maxLines = 1
                                 )
                             },
                             selected = selected,
@@ -141,14 +137,15 @@ fun AppNavigation() {
             enterTransition = { fadeIn(animationSpec = tween(300)) },
             exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
-            composable(Screen.Entry.route) { EntryScreen() }
-            composable(Screen.History.route) { HistoryScreen() }
+            composable(Screen.Entry.route) { EntryScreen(viewModel) }
+            composable(Screen.History.route) { HistoryScreen(viewModel) }
             composable(Screen.Settings.route) { 
                 SettingsScreen(
+                    viewModel = viewModel,
                     onNavigateToAbout = { navController.navigate(Screen.About.route) }
                 ) 
             }
-            composable(Screen.Dashboard.route) { DashboardScreen() }
+            composable(Screen.Dashboard.route) { DashboardScreen(viewModel) }
             composable(Screen.About.route) {
                 com.ekomak.performanstakippro.ui.screens.settings.AboutScreen(
                     onNavigateBack = { navController.popBackStack() }
