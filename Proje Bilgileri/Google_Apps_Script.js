@@ -22,6 +22,7 @@ var SHEET_PERSONEL = "PERSONEL";
 var SHEET_ISLEMLER = "Islemler";
 var SHEET_BOLUMLER = "Bolumler";
 var SHEET_KAYITLAR = "KAYITLAR";
+var SHEET_KULLANICILAR = "KULLANICILAR";
 
 /**
  * GET İsteklerini Karşılar (Veri Okuma)
@@ -29,10 +30,10 @@ var SHEET_KAYITLAR = "KAYITLAR";
  */
 function doGet(e) {
   var action = e.parameter.action;
-  
+
   if (action == 'getEmployees') {
     return okResponse(getEmployees());
-  } 
+  }
   else if (action == 'getWorkTypes') {
     return okResponse(getWorkTypes());
   }
@@ -44,7 +45,10 @@ function doGet(e) {
     var employee = e.parameter.employeeName || null;
     return okResponse(getRecords(days, employee));
   }
-  
+  else if (action == 'getUsers') {
+    return okResponse(getUsers());
+  }
+
   return errorResponse("Geçersiz action parametresi: " + action);
 }
 
@@ -55,7 +59,7 @@ function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
     var action = body.action;
-    
+
     if (action == 'saveRecord') {
       return okResponse(saveRecord(body.data));
     }
@@ -65,7 +69,7 @@ function doPost(e) {
     else if (action == 'deleteRecord') {
       return okResponse(deleteRecord(body.kayitId));
     }
-    
+
     return errorResponse("Geçersiz action parametresi: " + action);
   } catch (err) {
     return errorResponse("POST Hatası: " + err.toString());
@@ -80,12 +84,12 @@ function getEmployees() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_PERSONEL);
   var data = sheet.getDataRange().getValues();
   var employees = [];
-  
+
   // İlk satır başlık kabul edilir, 1. satırdan (index 1) başlanıyor.
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
     var durum = row[0] ? row[0].toString().toUpperCase().trim() : "";
-    
+
     // "ACTIVE" (İngilizce) ve "AKTİF"/"AKTIF" (Türkçe) kabul et
     if (durum === "ACTIVE" || durum.indexOf("AKT") === 0) {
       employees.push({
@@ -105,7 +109,7 @@ function getWorkTypes() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ISLEMLER);
   var data = sheet.getDataRange().getValues();
   var workTypes = [];
-  
+
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
     if (row[1]) {
@@ -123,7 +127,7 @@ function getDepartments() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_BOLUMLER);
   var data = sheet.getDataRange().getValues();
   var departments = [];
-  
+
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
     if (row[1]) {
@@ -136,11 +140,44 @@ function getDepartments() {
   return departments;
 }
 
+function getUsers() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_KULLANICILAR);
+  if (!sheet) return [];
+  var data = sheet.getDataRange().getValues();
+  var users = [];
+
+  // Başlık satırını oku ve sütun indekslerini bul
+  var headers = data[0];
+  var colAdSoyad = -1, colEmail = -1, colRol = -1;
+  for (var h = 0; h < headers.length; h++) {
+    var hdr = headers[h].toString().toLowerCase().trim();
+    if (hdr == 'adsoyad' || hdr == 'ad soyad' || hdr == 'adSoyad') colAdSoyad = h;
+    if (hdr == 'email' || hdr == 'e-mail' || hdr == 'e-posta' || hdr == 'eposta') colEmail = h;
+    if (hdr == 'rol' || hdr == 'role') colRol = h;
+  }
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var adSoyad = colAdSoyad >= 0 ? (row[colAdSoyad] ? row[colAdSoyad].toString() : "") : "";
+    var email = colEmail >= 0 ? (row[colEmail] ? row[colEmail].toString() : "") : "";
+    var rol = colRol >= 0 ? (row[colRol] ? row[colRol].toString() : "") : "";
+
+    if (adSoyad || email) {
+      users.push({
+        adSoyad: adSoyad,
+        email: email,
+        rol: rol
+      });
+    }
+  }
+  return users;
+}
+
 function getRecords(days, employee) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_KAYITLAR);
   var data = sheet.getDataRange().getValues();
   var records = [];
-  
+
   // Bugünden geriye filtreleme için tarih hesaplaması (yaklaşık)
   var cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - parseInt(days));
@@ -153,15 +190,15 @@ function getRecords(days, employee) {
       var rowDateStr = row[1].toString();
       var parts = rowDateStr.split('/');
       var rowDate = null;
-      if(parts.length == 3) {
-         rowDate = new Date(parts[2], parts[1]-1, parts[0]);
+      if (parts.length == 3) {
+        rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
       }
-      
+
       // employee filtresi
       if (employee && employee !== "") {
         if (row[3] !== employee) continue;
       }
-      
+
       // tarih filtresi
       if (rowDate && rowDate < cutoffDate) continue;
 
@@ -178,14 +215,14 @@ function getRecords(days, employee) {
       });
     }
   }
-  
+
   // En yeniden en eskiye sıralama
-  records.sort(function(a, b) {
+  records.sort(function (a, b) {
     if (a.created > b.created) return -1;
     if (a.created < b.created) return 1;
     return 0;
   });
-  
+
   return records;
 }
 
@@ -195,10 +232,10 @@ function getRecords(days, employee) {
 
 function saveRecord(data) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_KAYITLAR);
-  
+
   // Miktarı Türkçe Excel formatında virgülle kaydetmek istiyorsanız:
   var miktarStr = data.miktar.toString().replace(".", ",");
-  
+
   sheet.appendRow([
     data.kayitId,
     data.tarih,
@@ -210,31 +247,31 @@ function saveRecord(data) {
     data.birim,
     data.created
   ]);
-  
+
   return { success: true };
 }
 
 function updateRecord(data) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_KAYITLAR);
   var values = sheet.getDataRange().getValues();
-  
+
   for (var i = 1; i < values.length; i++) {
     if (values[i][0] == data.kayitId) {
-       var rowIndex = i + 1; // 1-based index
-       var miktarStr = data.miktar.toString().replace(".", ",");
-       
-       sheet.getRange(rowIndex, 1, 1, 9).setValues([[
-          data.kayitId,
-          data.tarih,
-          data.personelId,
-          data.adSoyad,
-          data.bolumAdi,
-          data.islemAdi,
-          miktarStr,
-          data.birim,
-          data.created
-       ]]);
-       return { success: true };
+      var rowIndex = i + 1; // 1-based index
+      var miktarStr = data.miktar.toString().replace(".", ",");
+
+      sheet.getRange(rowIndex, 1, 1, 9).setValues([[
+        data.kayitId,
+        data.tarih,
+        data.personelId,
+        data.adSoyad,
+        data.bolumAdi,
+        data.islemAdi,
+        miktarStr,
+        data.birim,
+        data.created
+      ]]);
+      return { success: true };
     }
   }
   throw new Error("Kayıt bulunamadı.");
@@ -243,12 +280,12 @@ function updateRecord(data) {
 function deleteRecord(kayitId) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_KAYITLAR);
   var values = sheet.getDataRange().getValues();
-  
+
   for (var i = 1; i < values.length; i++) {
     if (values[i][0] == kayitId) {
-       var rowIndex = i + 1; // 1-based index
-       sheet.deleteRow(rowIndex);
-       return { success: true };
+      var rowIndex = i + 1; // 1-based index
+      sheet.deleteRow(rowIndex);
+      return { success: true };
     }
   }
   throw new Error("Silinecek kayıt bulunamadı.");
