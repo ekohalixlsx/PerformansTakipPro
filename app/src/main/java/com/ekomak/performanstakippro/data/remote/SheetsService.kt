@@ -1,56 +1,54 @@
 package com.ekomak.performanstakippro.data.remote
 
 import com.ekomak.performanstakippro.data.model.*
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
-import com.google.api.services.sheets.v4.Sheets
-import com.google.api.services.sheets.v4.SheetsScopes
-import com.google.auth.http.HttpCredentialsAdapter
-import com.google.auth.oauth2.GoogleCredentials
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayInputStream
-import java.text.SimpleDateFormat
-import java.util.*
+import kotlinx.serialization.json.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.concurrent.TimeUnit
 
-class SheetsService(
-    private val serviceAccountJson: String,
-    private val spreadsheetId: String
-) {
-    private val sheetsService: Sheets by lazy {
-        val credentials = GoogleCredentials
-            .fromStream(ByteArrayInputStream(serviceAccountJson.toByteArray()))
-            .createScoped(listOf(SheetsScopes.SPREADSHEETS))
+/**
+ * Google Apps Script Web App ile haberleşen servis.
+ *
+ * Tüm veri okuma/yazma işlemleri, kullanıcının Google Sheets'ine
+ * bağlı Apps Script Web URL'si üzerinden yapılır.
+ * Kredi kartı veya Google Cloud hesabı gerektirmez.
+ */
+class SheetsService(private val scriptUrl: String) {
 
-        val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
-        val jsonFactory = GsonFactory.getDefaultInstance()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .followRedirects(true)
+        .followSslRedirects(true)
+        .build()
 
-        Sheets.Builder(httpTransport, jsonFactory, HttpCredentialsAdapter(credentials))
-            .setApplicationName("PerformansTakipPro")
-            .build()
-    }
+    private val json = Json { ignoreUnknownKeys = true }
+
+    // ==========================================
+    // VERİ OKUMA (GET)
+    // ==========================================
 
     suspend fun getEmployees(): Result<List<Employee>> = withContext(Dispatchers.IO) {
         try {
-            val response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, "PERSONEL!A2:F")
-                .execute()
+            val response = doGet("getEmployees")
+            val data = response.jsonArray
 
-            val employees = response.getValues()?.mapNotNull { row ->
-                try {
-                    Employee(
-                        durum = row.getOrNull(0)?.toString() ?: "Aktif",
-                        personelId = row.getOrNull(1)?.toString()?.toIntOrNull() ?: return@mapNotNull null,
-                        adSoyad = row.getOrNull(2)?.toString() ?: return@mapNotNull null,
-                        bolumAdi = row.getOrNull(3)?.toString() ?: "",
-                        departman = row.getOrNull(4)?.toString() ?: "",
-                        gorevi = row.getOrNull(5)?.toString() ?: ""
-                    )
-                } catch (e: Exception) {
-                    null
-                }
-            }?.filter { it.isActive } ?: emptyList()
-
+            val employees = data.map { item ->
+                val obj = item.jsonObject
+                Employee(
+                    durum = obj.str("durum"),
+                    personelId = obj.int("personelId"),
+                    adSoyad = obj.str("adSoyad"),
+                    bolumAdi = obj.str("bolumAdi"),
+                    departman = obj.str("departman"),
+                    gorevi = obj.str("gorevi")
+                )
+            }
             Result.success(employees)
         } catch (e: Exception) {
             Result.failure(e)
@@ -59,23 +57,36 @@ class SheetsService(
 
     suspend fun getWorkTypes(): Result<List<WorkType>> = withContext(Dispatchers.IO) {
         try {
-            val response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, "Islemler!A2:C")
-                .execute()
+            val response = doGet("getWorkTypes")
+            val data = response.jsonArray
 
-            val workTypes = response.getValues()?.mapNotNull { row ->
-                try {
-                    WorkType(
-                        islemId = row.getOrNull(0)?.toString()?.toIntOrNull() ?: return@mapNotNull null,
-                        islemAdi = row.getOrNull(1)?.toString() ?: return@mapNotNull null,
-                        birim = row.getOrNull(2)?.toString() ?: ""
-                    )
-                } catch (e: Exception) {
-                    null
-                }
-            } ?: emptyList()
-
+            val workTypes = data.map { item ->
+                val obj = item.jsonObject
+                WorkType(
+                    islemId = obj.int("islemId"),
+                    islemAdi = obj.str("islemAdi"),
+                    birim = obj.str("birim")
+                )
+            }
             Result.success(workTypes)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getDepartments(): Result<List<Department>> = withContext(Dispatchers.IO) {
+        try {
+            val response = doGet("getDepartments")
+            val data = response.jsonArray
+
+            val departments = data.map { item ->
+                val obj = item.jsonObject
+                Department(
+                    bolumId = obj.int("bolumId"),
+                    bolumAdi = obj.str("bolumAdi")
+                )
+            }
+            Result.success(departments)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -86,97 +97,54 @@ class SheetsService(
         days: Int = 33
     ): Result<List<PerformanceRecord>> = withContext(Dispatchers.IO) {
         try {
-            val response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, "KAYITLAR!A2:I")
-                .execute()
+            val params = mutableMapOf("days" to days.toString())
+            if (!employeeName.isNullOrEmpty()) {
+                params["employeeName"] = employeeName
+            }
+            val response = doGet("getRecords", params)
+            val data = response.jsonArray
 
-            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val cutoffDate = Calendar.getInstance().apply {
-                add(Calendar.DAY_OF_YEAR, -days)
-            }.time
-
-            val records = response.getValues()?.mapNotNull { row ->
-                try {
-                    val record = PerformanceRecord(
-                        kayitId = row.getOrNull(0)?.toString() ?: return@mapNotNull null,
-                        tarih = row.getOrNull(1)?.toString() ?: return@mapNotNull null,
-                        personelId = row.getOrNull(2)?.toString()?.toIntOrNull() ?: 0,
-                        adSoyad = row.getOrNull(3)?.toString() ?: "",
-                        bolumAdi = row.getOrNull(4)?.toString() ?: "",
-                        islemAdi = row.getOrNull(5)?.toString() ?: "",
-                        miktar = row.getOrNull(6)?.toString()?.replace(",", ".")?.toDoubleOrNull() ?: 0.0,
-                        birim = row.getOrNull(7)?.toString() ?: "",
-                        created = row.getOrNull(8)?.toString() ?: ""
-                    )
-
-                    // Filter by date
-                    val recordDate = try { dateFormat.parse(record.tarih) } catch (e: Exception) { null }
-                    if (recordDate != null && recordDate.before(cutoffDate)) return@mapNotNull null
-
-                    // Filter by employee name
-                    if (employeeName != null && record.adSoyad != employeeName) return@mapNotNull null
-
-                    record
-                } catch (e: Exception) {
-                    null
-                }
-            }?.sortedByDescending { it.created } ?: emptyList()
-
+            val records = data.map { item ->
+                val obj = item.jsonObject
+                PerformanceRecord(
+                    kayitId = obj.str("kayitId"),
+                    tarih = obj.str("tarih"),
+                    personelId = obj.int("personelId"),
+                    adSoyad = obj.str("adSoyad"),
+                    bolumAdi = obj.str("bolumAdi"),
+                    islemAdi = obj.str("islemAdi"),
+                    miktar = obj.double("miktar"),
+                    birim = obj.str("birim"),
+                    created = obj.str("created")
+                )
+            }
             Result.success(records)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
+    // ==========================================
+    // VERİ YAZMA (POST)
+    // ==========================================
+
     suspend fun saveRecord(record: PerformanceRecord): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val values = listOf(
-                listOf(
-                    record.kayitId,
-                    record.tarih,
-                    record.personelId.toString(),
-                    record.adSoyad,
-                    record.bolumAdi,
-                    record.islemAdi,
-                    record.miktar.toString().replace(".", ","),
-                    record.birim,
-                    record.created
-                )
-            )
-
-            val body = com.google.api.services.sheets.v4.model.ValueRange()
-                .setValues(values)
-
-            sheetsService.spreadsheets().values()
-                .append(spreadsheetId, "KAYITLAR!A:I", body)
-                .setValueInputOption("USER_ENTERED")
-                .execute()
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun deleteRecord(kayitId: String): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            val response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, "KAYITLAR!A:A")
-                .execute()
-
-            val rowIndex = response.getValues()?.indexOfFirst {
-                it.getOrNull(0)?.toString() == kayitId
-            } ?: -1
-
-            if (rowIndex < 0) return@withContext Result.failure(Exception("Record not found"))
-
-            // Clear the row content
-            val range = "KAYITLAR!A${rowIndex + 1}:I${rowIndex + 1}"
-            val clearBody = com.google.api.services.sheets.v4.model.ClearValuesRequest()
-            sheetsService.spreadsheets().values()
-                .clear(spreadsheetId, range, clearBody)
-                .execute()
-
+            val body = buildJsonObject {
+                put("action", "saveRecord")
+                put("data", buildJsonObject {
+                    put("kayitId", record.kayitId)
+                    put("tarih", record.tarih)
+                    put("personelId", record.personelId)
+                    put("adSoyad", record.adSoyad)
+                    put("bolumAdi", record.bolumAdi)
+                    put("islemAdi", record.islemAdi)
+                    put("miktar", record.miktar)
+                    put("birim", record.birim)
+                    put("created", record.created)
+                })
+            }
+            doPost(body)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -185,65 +153,100 @@ class SheetsService(
 
     suspend fun updateRecord(record: PerformanceRecord): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, "KAYITLAR!A:A")
-                .execute()
-
-            val rowIndex = response.getValues()?.indexOfFirst {
-                it.getOrNull(0)?.toString() == record.kayitId
-            } ?: -1
-
-            if (rowIndex < 0) return@withContext Result.failure(Exception("Record not found"))
-
-            val range = "KAYITLAR!A${rowIndex + 1}:I${rowIndex + 1}"
-            val values = listOf(
-                listOf(
-                    record.kayitId,
-                    record.tarih,
-                    record.personelId.toString(),
-                    record.adSoyad,
-                    record.bolumAdi,
-                    record.islemAdi,
-                    record.miktar.toString().replace(".", ","),
-                    record.birim,
-                    record.created
-                )
-            )
-
-            val body = com.google.api.services.sheets.v4.model.ValueRange()
-                .setValues(values)
-
-            sheetsService.spreadsheets().values()
-                .update(spreadsheetId, range, body)
-                .setValueInputOption("USER_ENTERED")
-                .execute()
-
+            val body = buildJsonObject {
+                put("action", "updateRecord")
+                put("data", buildJsonObject {
+                    put("kayitId", record.kayitId)
+                    put("tarih", record.tarih)
+                    put("personelId", record.personelId)
+                    put("adSoyad", record.adSoyad)
+                    put("bolumAdi", record.bolumAdi)
+                    put("islemAdi", record.islemAdi)
+                    put("miktar", record.miktar)
+                    put("birim", record.birim)
+                    put("created", record.created)
+                })
+            }
+            doPost(body)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun getDepartments(): Result<List<Department>> = withContext(Dispatchers.IO) {
+    suspend fun deleteRecord(kayitId: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, "Bolumler!A2:B")
-                .execute()
-
-            val departments = response.getValues()?.mapNotNull { row ->
-                try {
-                    Department(
-                        bolumId = row.getOrNull(0)?.toString()?.toIntOrNull() ?: return@mapNotNull null,
-                        bolumAdi = row.getOrNull(1)?.toString() ?: return@mapNotNull null
-                    )
-                } catch (e: Exception) {
-                    null
-                }
-            } ?: emptyList()
-
-            Result.success(departments)
+            val body = buildJsonObject {
+                put("action", "deleteRecord")
+                put("kayitId", kayitId)
+            }
+            doPost(body)
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
+    // ==========================================
+    // HTTP YARDIMCI FONKSİYONLAR
+    // ==========================================
+
+    private fun doGet(action: String, extraParams: Map<String, String> = emptyMap()): JsonElement {
+        val urlBuilder = StringBuilder(scriptUrl)
+        urlBuilder.append("?action=$action")
+        extraParams.forEach { (key, value) ->
+            urlBuilder.append("&$key=${java.net.URLEncoder.encode(value, "UTF-8")}")
+        }
+
+        val request = Request.Builder()
+            .url(urlBuilder.toString())
+            .get()
+            .build()
+
+        val response = client.newCall(request).execute()
+        val responseBody = response.body?.string()
+            ?: throw Exception("Sunucudan boş yanıt geldi")
+
+        val jsonResponse = json.parseToJsonElement(responseBody).jsonObject
+        val status = jsonResponse["status"]?.jsonPrimitive?.content
+
+        if (status != "success") {
+            val message = jsonResponse["message"]?.jsonPrimitive?.content ?: "Bilinmeyen hata"
+            throw Exception(message)
+        }
+
+        return jsonResponse["data"] ?: throw Exception("Veri bulunamadı")
+    }
+
+    private fun doPost(body: JsonObject) {
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = body.toString().toRequestBody(mediaType)
+
+        val request = Request.Builder()
+            .url(scriptUrl)
+            .post(requestBody)
+            .build()
+
+        val response = client.newCall(request).execute()
+        val responseBody = response.body?.string()
+            ?: throw Exception("Sunucudan boş yanıt geldi")
+
+        val jsonResponse = json.parseToJsonElement(responseBody).jsonObject
+        val status = jsonResponse["status"]?.jsonPrimitive?.content
+
+        if (status != "success") {
+            val message = jsonResponse["message"]?.jsonPrimitive?.content ?: "Bilinmeyen hata"
+            throw Exception(message)
+        }
+    }
+
+    // JSON extension helpers
+    private fun JsonObject.str(key: String): String =
+        this[key]?.jsonPrimitive?.content ?: ""
+
+    private fun JsonObject.int(key: String): Int =
+        this[key]?.jsonPrimitive?.intOrNull ?: 0
+
+    private fun JsonObject.double(key: String): Double =
+        this[key]?.jsonPrimitive?.doubleOrNull ?: 0.0
 }

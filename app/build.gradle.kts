@@ -96,18 +96,8 @@ dependencies {
     // Kotlin Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
-    // Google Sheets API
-    implementation("com.google.api-client:google-api-client-android:2.7.1") {
-        exclude(group = "org.apache.httpcomponents")
-    }
-    implementation("com.google.apis:google-api-services-sheets:v4-rev20241001-2.0.0") {
-        exclude(group = "org.apache.httpcomponents")
-    }
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.30.1")
-    implementation("com.google.http-client:google-http-client-gson:1.45.1")
-
-    // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    // HTTP Client (Apps Script API communication)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Charts (Vico)
     implementation("com.patrykandpatrick.vico:compose-m3:2.0.0-beta.2")

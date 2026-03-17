@@ -199,7 +199,7 @@ fun SettingsScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Admin Panel Section
+            // Connection Settings (Google Sheets Bağlantısı)
             SectionTitle(stringResource(R.string.settings_admin_panel).uppercase())
 
             Card(
@@ -210,17 +210,20 @@ fun SettingsScreen() {
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Primary)
             ) {
+                var webAppUrl by remember { mutableStateOf("") }
+                var urlSaved by remember { mutableStateOf(false) }
+
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            Icons.Filled.AdminPanelSettings,
+                            Icons.Filled.Link,
                             contentDescription = null,
                             tint = Accent2,
                             modifier = Modifier.size(28.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = stringResource(R.string.settings_admin_login),
+                            text = "Google Sheets Bağlantısı",
                             style = MaterialTheme.typography.titleMedium,
                             color = TextOnPrimary,
                             fontWeight = FontWeight.Bold
@@ -230,7 +233,7 @@ fun SettingsScreen() {
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = stringResource(R.string.settings_admin_desc),
+                        text = "Apps Script Web Uygulaması URL'sini girin. Bu URL, Google E-Tablonuza bağlanmanızı sağlar.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextOnPrimary.copy(alpha = 0.7f),
                         lineHeight = 18.sp
@@ -238,23 +241,54 @@ fun SettingsScreen() {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    OutlinedTextField(
+                        value = webAppUrl,
+                        onValueChange = {
+                            webAppUrl = it
+                            urlSaved = false
+                        },
+                        placeholder = {
+                            Text(
+                                "https://script.google.com/macros/s/.../exec",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextOnPrimary.copy(alpha = 0.3f)
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = MaterialTheme.typography.bodySmall.copy(
+                            color = TextOnPrimary
+                        ),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Accent,
+                            unfocusedBorderColor = TextOnPrimary.copy(alpha = 0.3f),
+                            cursorColor = Accent
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     Button(
-                        onClick = { /* TODO: Google Sign-In */ },
+                        onClick = {
+                            // TODO: Save URL to PreferencesManager
+                            urlSaved = true
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Accent,
+                            containerColor = if (urlSaved) Success else Accent,
                             contentColor = TextOnAccent
                         )
                     ) {
                         Icon(
-                            Icons.Filled.Login,
+                            if (urlSaved) Icons.Filled.CheckCircle else Icons.Filled.Save,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = stringResource(R.string.settings_google_login),
+                            text = if (urlSaved) "Bağlantı Kaydedildi ✓" else "Bağlantıyı Kaydet",
                             fontWeight = FontWeight.Bold
                         )
                     }
