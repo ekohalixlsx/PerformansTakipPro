@@ -1,37 +1,28 @@
-# Task: Performans Takip Pro
+# Performans Takip Pro — Büyük Düzeltme
 
-## Setup
-- [x] Create project directory
-- [x] GitHub CLI setup and authentication
-- [x] Initialize local git repository
-- [x] Create GitHub repository (`ekohalixlsx/PerformansTakipPro`)
+## Faz 1: Veri Katmanı (Google Sheets Entegrasyonu) ✅
+- [x] MainViewModel oluştur (employees, workTypes, departments, records)
+- [x] EntryScreen: DatePicker, Personel/İşTürü seçici, Kaydet
+- [x] HistoryScreen: Gerçek kayıtlar, Düzenle/Sil, mini grafik
+- [x] DashboardScreen: Gerçek veriden hesaplama
 
-## Planning
-- [x] Create Kotlin implementation plan
-- [x] Revise plan for free Google Apps Script integration
-- [ ] Create Flutter reference plan with HTML mockups
+## Faz 2: Görsel Düzeltmeler & Scroll Sorunları ✅
+- [x] Alt menü label kırpılma düzeltmesi (navigationBarsPadding)
+- [x] BottomSheet scroll sorunu (LazyColumn)
+- [x] Geçmiş kart yüksekliği azalt (tek satır layout)
+- [x] Dashboard kart yüksekliği azalt + tarih formatı düzelt (DateUtils)
+- [x] Şirket adı alanı ekle (varsayılan "-")
+- [x] Header ikonu büyüt (52dp)
+- [x] Seçili personeli hatırla (SharedPreferences)
+- [x] Düzenle butonu çalışsın (EditRecordDialog)
+- [x] Adaptive icon eklendi (ic_launcher_foreground + XML)
 
-## Kotlin Implementation
-- [x] Create Android project with Jetpack Compose
-- [x] Implement theme, design system, and navigation
-- [x] Build Kayıt (Entry) screen
-- [x] Build Geçmiş (History) screen
-- [x] Build Ayarlar (Settings) screen
-- [x] Build Dashboard screens (Günlük/Haftalık/Aylık)
-- [x] Implement notifications system
-- [x] Implement Turkish/English localization
-- [x] Remove Google Cloud dependencies & add OkHttp
-- [x] Rewrite SheetsService for Apps Script HTTP API
-- [x] Update Settings with Web App URL field
-- [x] Create Google_Apps_Script.js with setup instructions
-- [x] Set up GitHub Actions CI
-- [x] Push all updates to GitHub
+## Faz 3: Admin Girişi ✅
+- [x] AdminLoginDialog (EKO / EKO2026)
+- [x] Beni hatırla checkbox
+- [x] Admin durumu göster + Çıkış butonu
 
-## Polish & Revisions
-- [ ] App Name -> "Performans Takip Pro"
-- [ ] App Icon -> [performans1.png](file:///c:/projects/PerformansTakipPro/Proje%20Bilgileri/performans1.png)
-- [ ] Add "Developed by İlyas YEŞİL" to Settings
-- [ ] Add "Hakkında" (About) menu in Settings
-- [ ] Create `AboutScreen.kt` with version, usage, copyright, and dev email
-- [ ] Add README.md to GitHub
-- [ ] Verify successful APK build
+## Faz 4: İnce Ayarlar ✅
+- [x] APK adı: PerformansTakipPro-v1.1.0
+- [x] Versiyon: 1.1.0 (versionCode: 2)
+- [x] DateUtils.kt oluşturuldu (JS Date string parse)

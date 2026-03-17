@@ -21,11 +21,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ekomak.performanstakippro.R
-import com.ekomak.performanstakippro.data.model.Employee
 import com.ekomak.performanstakippro.data.model.PerformanceRecord
 import com.ekomak.performanstakippro.ui.MainViewModel
 import com.ekomak.performanstakippro.ui.theme.*
-import java.text.SimpleDateFormat
+import com.ekomak.performanstakippro.util.DateUtils
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,15 +69,12 @@ fun DashboardScreen(viewModel: MainViewModel) {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background)
+        modifier = Modifier.fillMaxSize().background(Background)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Primary, PrimaryLight)))
                     .padding(top = 48.dp, bottom = 8.dp, start = 20.dp, end = 20.dp)
             ) {
@@ -89,16 +85,12 @@ fun DashboardScreen(viewModel: MainViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(
-                                stringResource(R.string.dashboard_title),
+                            Text(stringResource(R.string.dashboard_title),
                                 style = MaterialTheme.typography.headlineLarge,
-                                color = TextOnPrimary, fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                "${selectedEmployee?.adSoyad ?: stringResource(R.string.all_employees)} · ${tabs[selectedTab]}",
+                                color = TextOnPrimary, fontWeight = FontWeight.Bold)
+                            Text("${selectedEmployee?.adSoyad ?: stringResource(R.string.all_employees)} · ${tabs[selectedTab]}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextOnPrimary.copy(alpha = 0.7f)
-                            )
+                                color = TextOnPrimary.copy(alpha = 0.7f))
                         }
                         IconButton(onClick = { /* TODO: PDF */ }) {
                             Icon(Icons.Outlined.PictureAsPdf, stringResource(R.string.dashboard_pdf),
@@ -116,23 +108,19 @@ fun DashboardScreen(viewModel: MainViewModel) {
                         Surface(
                             color = TextOnPrimary.copy(alpha = 0.1f),
                             shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth()
                                 .menuAnchor()
                                 .clickable { showEmployeeDropdown = true }
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth()
                                     .padding(horizontal = 14.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    selectedEmployee?.adSoyad ?: stringResource(R.string.all_employees),
+                                Text(selectedEmployee?.adSoyad ?: stringResource(R.string.all_employees),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = TextOnPrimary, fontWeight = FontWeight.Medium,
-                                    modifier = Modifier.weight(1f)
-                                )
+                                    modifier = Modifier.weight(1f))
                                 Icon(Icons.Filled.ArrowDropDown, null, tint = TextOnPrimary.copy(alpha = 0.6f))
                             }
                         }
@@ -142,18 +130,12 @@ fun DashboardScreen(viewModel: MainViewModel) {
                         ) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.all_employees)) },
-                                onClick = {
-                                    viewModel.setSelectedEmployee(null)
-                                    showEmployeeDropdown = false
-                                }
+                                onClick = { viewModel.setSelectedEmployee(null); showEmployeeDropdown = false }
                             )
                             employees.forEach { emp ->
                                 DropdownMenuItem(
                                     text = { Text("${emp.adSoyad} (${emp.personelId})") },
-                                    onClick = {
-                                        viewModel.setSelectedEmployee(emp)
-                                        showEmployeeDropdown = false
-                                    }
+                                    onClick = { viewModel.setSelectedEmployee(emp); showEmployeeDropdown = false }
                                 )
                             }
                         }
@@ -163,8 +145,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
 
                     // Tab selector
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
                             .background(TextOnPrimary.copy(alpha = 0.08f))
                             .padding(3.dp),
@@ -181,8 +162,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
                                     color = if (isSelected) TextOnAccent else TextOnPrimary.copy(alpha = 0.6f),
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                     modifier = Modifier.padding(vertical = 8.dp),
-                                    textAlign = TextAlign.Center
-                                )
+                                    textAlign = TextAlign.Center)
                             }
                         }
                     }
@@ -198,17 +178,13 @@ fun DashboardScreen(viewModel: MainViewModel) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // Stats Cards
                     item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             StatCard(stringResource(R.string.dashboard_total),
-                                formatLargeNumber(totalMiktar), mainUnit,
-                                GradientTeal, Modifier.weight(1f))
+                                formatLargeNumber(totalMiktar), mainUnit, GradientTeal, Modifier.weight(1f))
                             StatCard(stringResource(R.string.dashboard_average),
                                 String.format("%.1f", avgMiktar).replace(".", ","),
                                 "$mainUnit/gün", GradientAmber, Modifier.weight(1f))
@@ -218,12 +194,10 @@ fun DashboardScreen(viewModel: MainViewModel) {
                         }
                     }
 
-                    // Data rows
                     if (groupedData.isEmpty()) {
                         item {
                             Text(stringResource(R.string.history_empty), color = TextSecondary,
-                                modifier = Modifier.fillMaxWidth().padding(32.dp),
-                                textAlign = TextAlign.Center)
+                                modifier = Modifier.fillMaxWidth().padding(32.dp), textAlign = TextAlign.Center)
                         }
                     } else {
                         val maxGroupVal = groupedData.maxOfOrNull { it.value } ?: 1.0
@@ -248,52 +222,40 @@ fun DashboardScreen(viewModel: MainViewModel) {
 data class DashboardGroup(val label: String, val value: Double, val subtitle: String)
 
 fun groupByDay(records: List<PerformanceRecord>): List<DashboardGroup> {
-    val format = SimpleDateFormat("dd/MM/yyyy", Locale("tr"))
-    val displayFormat = SimpleDateFormat("d MMM", Locale("tr"))
-    val dayFormat = SimpleDateFormat("EEEE", Locale("tr"))
-
-    return records.groupBy { it.tarih }
-        .map { (date, recs) ->
-            val parsedDate = try { format.parse(date) } catch (_: Exception) { null }
-            val display = if (parsedDate != null) displayFormat.format(parsedDate) else date
-            val day = if (parsedDate != null) dayFormat.format(parsedDate).replaceFirstChar { it.uppercase() } else ""
-            DashboardGroup(display, recs.sumOf { it.miktar }, day)
+    return records.mapNotNull { rec ->
+        val date = DateUtils.parseToDate(rec.tarih)
+        if (date != null) Pair(date, rec) else null
+    }
+        .groupBy { DateUtils.formatDashboardDay(it.first) }
+        .map { (dateStr, pairs) ->
+            val dayOfWeek = DateUtils.getDayOfWeek(pairs.first().first)
+            DashboardGroup(dateStr, pairs.sumOf { it.second.miktar }, dayOfWeek)
         }
         .sortedByDescending { it.label }
         .take(14)
 }
 
 fun groupByWeek(records: List<PerformanceRecord>): List<DashboardGroup> {
-    val format = SimpleDateFormat("dd/MM/yyyy", Locale("tr"))
-    val cal = Calendar.getInstance()
-
     return records.mapNotNull { rec ->
-        val date = try { format.parse(rec.tarih) } catch (_: Exception) { null }
-        if (date != null) { cal.time = date; Pair(cal.get(Calendar.WEEK_OF_YEAR), rec) } else null
+        val date = DateUtils.parseToDate(rec.tarih)
+        if (date != null) Pair(date, rec) else null
     }
-        .groupBy { it.first }
-        .map { (week, pairs) ->
-            DashboardGroup("Hafta $week", pairs.sumOf { it.second.miktar }, "${pairs.size} kayıt")
+        .groupBy { DateUtils.formatDashboardWeek(it.first) }
+        .map { (weekStr, pairs) ->
+            DashboardGroup(weekStr, pairs.sumOf { it.second.miktar }, "${pairs.size} kayıt")
         }
         .sortedByDescending { it.label }
         .take(8)
 }
 
 fun groupByMonth(records: List<PerformanceRecord>): List<DashboardGroup> {
-    val format = SimpleDateFormat("dd/MM/yyyy", Locale("tr"))
-    val monthFormat = SimpleDateFormat("MMMM", Locale("tr"))
-    val yearFormat = SimpleDateFormat("yyyy", Locale("tr"))
-
     return records.mapNotNull { rec ->
-        val date = try { format.parse(rec.tarih) } catch (_: Exception) { null }
-        if (date != null) Pair(SimpleDateFormat("yyyy-MM", Locale("tr")).format(date), rec) else null
+        val date = DateUtils.parseToDate(rec.tarih)
+        if (date != null) Pair(date, rec) else null
     }
-        .groupBy { it.first }
-        .map { (_, pairs) ->
-            val date = format.parse(pairs.first().second.tarih)!!
-            val month = monthFormat.format(date).replaceFirstChar { it.uppercase() }
-            val year = yearFormat.format(date)
-            DashboardGroup(month, pairs.sumOf { it.second.miktar }, year)
+        .groupBy { DateUtils.formatDashboardMonth(it.first) }
+        .map { (monthStr, pairs) ->
+            DashboardGroup(monthStr, pairs.sumOf { it.second.miktar }, "${pairs.size} kayıt")
         }
         .sortedByDescending { it.label }
         .take(6)
@@ -314,15 +276,12 @@ fun StatCard(title: String, value: String, unit: String, gradientColors: List<Co
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth()
-                .background(Brush.linearGradient(gradientColors))
-                .padding(12.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxWidth()
+            .background(Brush.linearGradient(gradientColors)).padding(10.dp)) {
             Column {
                 Text(title, style = MaterialTheme.typography.labelSmall,
                     color = Color.White.copy(alpha = 0.8f), letterSpacing = 0.5.sp)
-                Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(value, style = MaterialTheme.typography.headlineMedium.copy(fontFamily = JetBrainsMono),
                     color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 Text(unit, style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.7f))
@@ -334,30 +293,28 @@ fun StatCard(title: String, value: String, unit: String, gradientColors: List<Co
 @Composable
 fun PerformanceRow(date: String, subtitle: String, value: String, progress: Float) {
     Card(
-        modifier = Modifier.fillMaxWidth().shadow(2.dp, RoundedCornerShape(10.dp)),
+        modifier = Modifier.fillMaxWidth().shadow(1.dp, RoundedCornerShape(10.dp)),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = CardBackground)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(0.3f)) {
                 Text(date, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, fontWeight = FontWeight.SemiBold)
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
             }
-            Box(
-                modifier = Modifier.weight(0.45f).height(6.dp)
-                    .clip(RoundedCornerShape(3.dp)).background(Border)
-            ) {
+            Box(modifier = Modifier.weight(0.4f).height(6.dp)
+                .clip(RoundedCornerShape(3.dp)).background(Border)) {
                 Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(progress)
                     .clip(RoundedCornerShape(3.dp))
                     .background(Brush.horizontalGradient(GradientTeal)))
             }
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(value, style = MaterialTheme.typography.bodySmall.copy(fontFamily = JetBrainsMono),
                 color = TextPrimary, fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(0.25f), textAlign = TextAlign.End)
+                modifier = Modifier.weight(0.3f), textAlign = TextAlign.End)
         }
     }
 }

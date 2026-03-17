@@ -4,6 +4,8 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -39,10 +41,12 @@ fun EntryScreen(viewModel: MainViewModel) {
     val employees by viewModel.employees.collectAsState()
     val workTypes by viewModel.workTypes.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val savedEmployee by viewModel.selectedEmployee.collectAsState()
+    val savedWorkType by viewModel.defaultWorkType.collectAsState()
 
     var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
-    var selectedEmployee by remember { mutableStateOf<Employee?>(null) }
-    var selectedWorkType by remember { mutableStateOf<WorkType?>(null) }
+    var selectedEmployee by remember(savedEmployee) { mutableStateOf(savedEmployee) }
+    var selectedWorkType by remember(savedWorkType) { mutableStateOf(savedWorkType) }
     var quantity by remember { mutableStateOf("") }
     var showEmployeeSheet by remember { mutableStateOf(false) }
     var showWorkTypeSheet by remember { mutableStateOf(false) }
@@ -81,7 +85,7 @@ fun EntryScreen(viewModel: MainViewModel) {
         }
     }
 
-    // Employee Bottom Sheet
+    // Employee Bottom Sheet — LazyColumn ile scroll edilebilir
     if (showEmployeeSheet) {
         ModalBottomSheet(
             onDismissRequest = { showEmployeeSheet = false; employeeSearch = "" },
@@ -110,24 +114,31 @@ fun EntryScreen(viewModel: MainViewModel) {
                     )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+            }
 
-                val filtered = employees.filter {
-                    employeeSearch.isEmpty() ||
-                    it.adSoyad.contains(employeeSearch, ignoreCase = true) ||
-                    it.personelId.toString().contains(employeeSearch)
-                }
+            val filtered = employees.filter {
+                employeeSearch.isEmpty() ||
+                it.adSoyad.contains(employeeSearch, ignoreCase = true) ||
+                it.personelId.toString().contains(employeeSearch)
+            }
 
-                if (filtered.isEmpty()) {
-                    Text(
-                        text = if (isLoading) stringResource(R.string.loading) else "Personel bulunamadı",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary,
-                        modifier = Modifier.padding(vertical = 24.dp).fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                }
+            if (filtered.isEmpty()) {
+                Text(
+                    text = if (isLoading) stringResource(R.string.loading) else "Personel bulunamadı",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                    modifier = Modifier.padding(vertical = 24.dp).fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
 
-                filtered.forEach { emp ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                items(filtered) { emp ->
                     Surface(
                         onClick = {
                             selectedEmployee = emp
@@ -166,12 +177,12 @@ fun EntryScreen(viewModel: MainViewModel) {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
     }
 
-    // Work Type Bottom Sheet
+    // Work Type Bottom Sheet — LazyColumn ile scroll edilebilir
     if (showWorkTypeSheet) {
         ModalBottomSheet(
             onDismissRequest = { showWorkTypeSheet = false },
@@ -186,7 +197,14 @@ fun EntryScreen(viewModel: MainViewModel) {
                     letterSpacing = 1.sp,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
-                workTypes.forEach { wt ->
+            }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                items(workTypes) { wt ->
                     Surface(
                         onClick = {
                             selectedWorkType = wt
@@ -212,7 +230,7 @@ fun EntryScreen(viewModel: MainViewModel) {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
     }
@@ -252,18 +270,18 @@ fun EntryScreen(viewModel: MainViewModel) {
                             color = TextOnPrimary.copy(alpha = 0.7f)
                         )
                     }
-                    // App icon
+                    // App icon — daha büyük
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape),
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(12.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             painter = painterResource(id = R.mipmap.ic_launcher),
                             contentDescription = null,
                             tint = Color.Unspecified,
-                            modifier = Modifier.size(44.dp)
+                            modifier = Modifier.size(52.dp)
                         )
                     }
                 }
@@ -280,7 +298,7 @@ fun EntryScreen(viewModel: MainViewModel) {
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // Date Field
                     Text(stringResource(R.string.entry_date).uppercase(),
@@ -405,15 +423,14 @@ fun EntryScreen(viewModel: MainViewModel) {
                     OutlinedTextField(
                         value = quantity,
                         onValueChange = { newValue ->
-                            // Noktayı virgüle çevir, sadece virgülle ondalık izin ver
                             val cleaned = newValue.replace(".", ",")
                             if (cleaned.isEmpty() || cleaned.matches(Regex("^\\d*,?\\d*$"))) {
                                 quantity = cleaned
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(64.dp),
-                        textStyle = MaterialTheme.typography.displayLarge.copy(
-                            textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 32.sp
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        textStyle = MaterialTheme.typography.headlineLarge.copy(
+                            textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 28.sp
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
@@ -475,7 +492,6 @@ fun EntryScreen(viewModel: MainViewModel) {
                         onSuccess = {
                             isSaving = false
                             saveSuccess = true
-                            // Formu sıfırla
                             quantity = ""
                         },
                         onError = { msg ->
@@ -487,7 +503,7 @@ fun EntryScreen(viewModel: MainViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .height(52.dp),
+                    .height(50.dp),
                 shape = RoundedCornerShape(14.dp),
                 enabled = !isSaving,
                 colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = TextOnAccent),

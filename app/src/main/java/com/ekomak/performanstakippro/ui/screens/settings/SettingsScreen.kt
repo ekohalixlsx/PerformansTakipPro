@@ -1,9 +1,10 @@
 package com.ekomak.performanstakippro.ui.screens.settings
 
 import android.app.TimePickerDialog
-import android.content.Context
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.ekomak.performanstakippro.R
 import com.ekomak.performanstakippro.ui.MainViewModel
 import com.ekomak.performanstakippro.ui.theme.*
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,8 +47,12 @@ fun SettingsScreen(
     var notificationMinute by remember { mutableIntStateOf(45) }
     var showEmployeeSheet by remember { mutableStateOf(false) }
     var showWorkTypeSheet by remember { mutableStateOf(false) }
+    var companyName by remember { mutableStateOf("-") }
+    var showAdminLoginDialog by remember { mutableStateOf(false) }
+    var adminLoginError by remember { mutableStateOf(false) }
+    val isAdminLoggedIn by viewModel.isAdminLoggedIn.collectAsState()
 
-    // Employee selection bottom sheet
+    // Employee selection bottom sheet — LazyColumn ile scroll
     if (showEmployeeSheet) {
         ModalBottomSheet(
             onDismissRequest = { showEmployeeSheet = false },
@@ -57,11 +63,14 @@ fun SettingsScreen(
                 Text(
                     stringResource(R.string.settings_selected_employee).uppercase(),
                     style = MaterialTheme.typography.labelMedium,
-                    color = TextSecondary,
-                    letterSpacing = 1.sp,
+                    color = TextSecondary, letterSpacing = 1.sp,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
-                employees.forEach { emp ->
+            }
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp).padding(horizontal = 16.dp)
+            ) {
+                items(employees) { emp ->
                     Surface(
                         onClick = {
                             viewModel.setSelectedEmployee(emp)
@@ -87,12 +96,12 @@ fun SettingsScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
     }
 
-    // Work Type selection bottom sheet
+    // Work Type selection bottom sheet — LazyColumn ile scroll
     if (showWorkTypeSheet) {
         ModalBottomSheet(
             onDismissRequest = { showWorkTypeSheet = false },
@@ -103,11 +112,14 @@ fun SettingsScreen(
                 Text(
                     stringResource(R.string.settings_default_work_type).uppercase(),
                     style = MaterialTheme.typography.labelMedium,
-                    color = TextSecondary,
-                    letterSpacing = 1.sp,
+                    color = TextSecondary, letterSpacing = 1.sp,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
-                workTypes.forEach { wt ->
+            }
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp).padding(horizontal = 16.dp)
+            ) {
+                items(workTypes) { wt ->
                     Surface(
                         onClick = {
                             viewModel.setDefaultWorkType(wt)
@@ -134,22 +146,18 @@ fun SettingsScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize().background(Background)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-        ) {
+    Box(modifier = Modifier.fillMaxSize().background(Background)) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             // Header
             Box(
                 modifier = Modifier.fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Primary, PrimaryLight)))
-                    .padding(top = 48.dp, bottom = 16.dp, start = 20.dp, end = 20.dp)
+                    .padding(top = 48.dp, bottom = 14.dp, start = 20.dp, end = 20.dp)
             ) {
                 Column {
                     Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineLarge,
@@ -159,7 +167,7 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // User Settings Section
             SectionTitle(stringResource(R.string.settings_user).uppercase())
@@ -183,6 +191,16 @@ fun SettingsScreen(
                 )
                 HorizontalDivider(color = Divider, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
 
+                // Şirket adı
+                SettingsItem(
+                    icon = Icons.Outlined.Business,
+                    title = stringResource(R.string.settings_company),
+                    subtitle = companyName.ifEmpty { "-" },
+                    onClick = { /* TODO: Düzenleme dialogu */ },
+                    showChevron = true
+                )
+                HorizontalDivider(color = Divider, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
+
                 SettingsItem(
                     icon = Icons.Outlined.Language,
                     title = stringResource(R.string.settings_language),
@@ -193,14 +211,14 @@ fun SettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Notifications Section
             SectionTitle(stringResource(R.string.settings_notifications).uppercase())
 
             SettingsCard {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(Icons.Outlined.Notifications, null, tint = Accent, modifier = Modifier.size(22.dp))
@@ -219,7 +237,6 @@ fun SettingsScreen(
 
                 if (notificationsEnabled) {
                     HorizontalDivider(color = Divider, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
-                    SectionLabel(stringResource(R.string.settings_notification_time).uppercase())
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .clickable {
@@ -240,22 +257,54 @@ fun SettingsScreen(
                                 String.format("%02d:%02d", notificationHour, notificationMinute),
                                 style = MaterialTheme.typography.titleMedium.copy(fontFamily = JetBrainsMono),
                                 color = Accent, fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Connection Status (simplified)
+            // Admin Panel
+            SectionTitle(stringResource(R.string.settings_admin_panel).uppercase())
+
+            SettingsCard {
+                if (isAdminLoggedIn) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Outlined.AdminPanelSettings, null, tint = Success, modifier = Modifier.size(22.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Yönetici", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                            Text("Giriş yapıldı", style = MaterialTheme.typography.bodyLarge, color = Success, fontWeight = FontWeight.Medium)
+                        }
+                        TextButton(onClick = { viewModel.adminLogout() }) {
+                            Text("Çıkış", color = Danger)
+                        }
+                    }
+                } else {
+                    SettingsItem(
+                        icon = Icons.Outlined.Lock,
+                        title = stringResource(R.string.settings_admin_login),
+                        subtitle = stringResource(R.string.settings_admin_desc),
+                        onClick = { showAdminLoginDialog = true },
+                        showChevron = true
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Connection Status
             SectionTitle(stringResource(R.string.connection_status).uppercase())
 
             SettingsCard {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(Icons.Filled.Link, null, tint = Accent, modifier = Modifier.size(22.dp))
@@ -269,13 +318,12 @@ fun SettingsScreen(
                         Text(
                             if (isConnected) stringResource(R.string.connected) else stringResource(R.string.not_connected),
                             style = MaterialTheme.typography.labelMedium,
-                            color = if (isConnected) Success else Danger, fontWeight = FontWeight.SemiBold
-                        )
+                            color = if (isConnected) Success else Danger, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // About
             SettingsCard {
@@ -288,19 +336,80 @@ fun SettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Developer Credit
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(stringResource(R.string.developer_credit), style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary.copy(alpha = 0.6f), letterSpacing = 0.5.sp)
-                Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text("v${com.ekomak.performanstakippro.BuildConfig.VERSION_NAME}",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextSecondary.copy(alpha = 0.4f), fontFamily = JetBrainsMono)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        // Admin Login Dialog
+        if (showAdminLoginDialog) {
+            var username by remember { mutableStateOf("") }
+            var password by remember { mutableStateOf("") }
+            var rememberMe by remember { mutableStateOf(false) }
+
+            AlertDialog(
+                onDismissRequest = { showAdminLoginDialog = false; adminLoginError = false },
+                icon = { Icon(Icons.Outlined.AdminPanelSettings, null, tint = Accent) },
+                title = { Text(stringResource(R.string.settings_admin_login)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OutlinedTextField(
+                            value = username,
+                            onValueChange = { username = it; adminLoginError = false },
+                            label = { Text("Kullanıcı adı") },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            isError = adminLoginError,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it; adminLoginError = false },
+                            label = { Text("Şifre") },
+                            singleLine = true,
+                            visualTransformation = PasswordVisualTransformation(),
+                            shape = RoundedCornerShape(12.dp),
+                            isError = adminLoginError,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (adminLoginError) {
+                            Text("Kullanıcı adı veya şifre hatalı",
+                                style = MaterialTheme.typography.bodySmall, color = Danger)
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it },
+                                colors = CheckboxDefaults.colors(checkedColor = Accent))
+                            Text("Beni hatırla", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (viewModel.adminLogin(username, password)) {
+                            if (rememberMe) viewModel.setAdminRememberMe(true)
+                            showAdminLoginDialog = false
+                            adminLoginError = false
+                        } else {
+                            adminLoginError = true
+                        }
+                    }) { Text("Giriş", color = Accent) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAdminLoginDialog = false; adminLoginError = false }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            )
         }
     }
 }
@@ -309,13 +418,13 @@ fun SettingsScreen(
 fun SectionTitle(text: String) {
     Text(text, style = MaterialTheme.typography.labelMedium, color = TextSecondary,
         letterSpacing = 1.5.sp, fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp))
 }
 
 @Composable
 fun SectionLabel(text: String) {
     Text(text, style = MaterialTheme.typography.labelSmall, color = TextSecondary,
-        letterSpacing = 1.sp, modifier = Modifier.padding(start = 52.dp, top = 6.dp))
+        letterSpacing = 1.sp, modifier = Modifier.padding(start = 52.dp, top = 4.dp))
 }
 
 @Composable

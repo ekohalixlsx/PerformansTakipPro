@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -47,8 +46,6 @@ sealed class Screen(
     data object History : Screen("history", R.string.nav_history, Icons.Filled.History, Icons.Outlined.History)
     data object Settings : Screen("settings", R.string.nav_settings, Icons.Filled.Settings, Icons.Outlined.Settings)
     data object Dashboard : Screen("dashboard", R.string.nav_dashboard, Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
-    
-    // Non-bottom-nav destinations
     data object About : Screen("about")
 }
 
@@ -68,7 +65,6 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            // Hakkında ekranında bottom bar gösterme
             val showBottomBar = currentDestination?.route != Screen.About.route
             if (showBottomBar) {
                 NavigationBar(
@@ -77,7 +73,7 @@ fun AppNavigation() {
                     tonalElevation = 0.dp,
                     modifier = Modifier
                         .shadow(24.dp)
-                        .height(64.dp)
+                        .navigationBarsPadding()
                 ) {
                     bottomNavItems.forEach { screen ->
                         val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
