@@ -218,7 +218,7 @@ fun AboutScreen(viewModel: com.ekomak.performanstakippro.ui.MainViewModel, onNav
                         onClick = {
                             val intent = Intent(Intent.ACTION_SENDTO).apply {
                                 data = Uri.parse("mailto:$developerEmail")
-                                putExtra(Intent.EXTRA_SUBJECT, "Performans Takip Pro - İletişim")
+                                putExtra(Intent.EXTRA_SUBJECT, "Performans Takip - İletişim")
                             }
                             context.startActivity(Intent.createChooser(intent, "Email Gönder"))
                         },

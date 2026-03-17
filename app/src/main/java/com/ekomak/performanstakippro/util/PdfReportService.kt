@@ -103,11 +103,6 @@ class PdfReportService(private val context: Context) {
             canvas.drawText("Bölüm: ${employee.bolumAdi}", 30f, y, bodyPaint)
             y += 18f
 
-            // Dönem
-            val monthFormat = SimpleDateFormat("MMMM yyyy", Locale("tr"))
-            canvas.drawText("Dönem: ${monthFormat.format(Date())}", 30f, y, bodyPaint)
-            y += 30f
-
             // Divider
             canvas.drawLine(30f, y, pageWidth - 30f, y, linePaint)
             y += 20f
@@ -184,7 +179,7 @@ class PdfReportService(private val context: Context) {
                 textSize = 9f
                 isAntiAlias = true
             }
-            canvas.drawText("Performans Takip Pro © 2026 | Otomatik oluşturulmuş rapor",
+            canvas.drawText("Performans Takip © 2026 | Otomatik oluşturulmuş rapor",
                 30f, (pageHeight - 20).toFloat(), footerPaint)
 
             document.finishPage(page)

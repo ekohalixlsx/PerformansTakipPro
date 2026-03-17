@@ -1,12 +1,12 @@
 <resources>
-    <string name="app_name">Performans Takip Pro</string>
-    
+    <string name="app_name">Performans Takip</string>
+
     <!-- Navigation -->
     <string name="nav_entry">Kayıt</string>
     <string name="nav_history">Geçmiş</string>
     <string name="nav_settings">Ayarlar</string>
     <string name="nav_dashboard">Dashboard</string>
-    
+
     <!-- Entry Screen -->
     <string name="entry_title">Performans Kaydı</string>
     <string name="entry_date">Tarih</string>
@@ -25,7 +25,7 @@
     <string name="entry_validation_work_type">Lütfen iş türü seçiniz</string>
     <string name="entry_validation_quantity">Lütfen miktar giriniz</string>
     <string name="entry_search_placeholder">Ara…</string>
-    
+
     <!-- History Screen -->
     <string name="history_title">Son Kayıtlar</string>
     <string name="history_subtitle">Son 33 gün</string>
@@ -37,7 +37,7 @@
     <string name="history_empty">Henüz kayıt bulunamadı</string>
     <string name="history_no">Hayır</string>
     <string name="history_yes">Evet</string>
-    
+
     <!-- Settings Screen -->
     <string name="settings_title">Ayarlar</string>
     <string name="settings_subtitle">Kullanıcı &amp; Yönetici</string>
@@ -57,7 +57,7 @@
     <string name="settings_language">Dil</string>
     <string name="settings_language_tr">Türkçe</string>
     <string name="settings_language_en">English</string>
-    
+
     <!-- Dashboard Screen -->
     <string name="dashboard_title">Performans</string>
     <string name="dashboard_daily">Günlük</string>
@@ -68,7 +68,7 @@
     <string name="dashboard_highest">En Yüksek</string>
     <string name="dashboard_pdf">PDF</string>
     <string name="dashboard_export_pdf">PDF Dışa Aktar</string>
-    
+
     <!-- Common -->
     <string name="loading">Yükleniyor…</string>
     <string name="error_network">İnternet bağlantısı bulunamadı</string>
