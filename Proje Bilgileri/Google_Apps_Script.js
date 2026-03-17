@@ -84,12 +84,10 @@ function getEmployees() {
   // İlk satır başlık kabul edilir, 1. satırdan (index 1) başlanıyor.
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var durum = row[0] ? row[0].toString().toUpperCase()
-      .replace("İ","I").replace("Ş","S").replace("Ç","C")
-      .replace("Ğ","G").replace("Ü","U").replace("Ö","O") : "";
+    var durum = row[0] ? row[0].toString().toUpperCase().trim() : "";
     
-    // "AKTIF" veya "AKTİF" her iki yazılışı da kabul et
-    if (durum.indexOf("AKT") === 0) {
+    // "ACTIVE" (İngilizce) ve "AKTİF"/"AKTIF" (Türkçe) kabul et
+    if (durum === "ACTIVE" || durum.indexOf("AKT") === 0) {
       employees.push({
         durum: row[0].toString(),
         personelId: parseInt(row[1]) || 0,
