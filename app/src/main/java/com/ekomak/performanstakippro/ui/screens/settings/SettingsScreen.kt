@@ -23,7 +23,7 @@ import com.ekomak.performanstakippro.R
 import com.ekomak.performanstakippro.ui.theme.*
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onNavigateToAbout: () -> Unit = {}) {
     var notificationsEnabled by remember { mutableStateOf(true) }
     var selectedLanguage by remember { mutableStateOf("tr") }
 
@@ -271,46 +271,41 @@ fun SettingsScreen() {
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // App Info
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+            SettingsCard {
+                SettingsItem(
+                    icon = Icons.Outlined.Info,
+                    title = stringResource(R.string.about_title),
+                    subtitle = stringResource(R.string.about_app_info),
+                    onClick = onNavigateToAbout,
+                    showChevron = true
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Developer Credit
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = stringResource(R.string.settings_app_version),
+                    text = stringResource(R.string.developer_credit),
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    color = TextSecondary.copy(alpha = 0.6f),
+                    letterSpacing = 0.5.sp
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "v1.0.0",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextSecondary.copy(alpha = 0.4f),
+                    fontFamily = JetBrainsMono
                 )
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_company),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
-                )
-                Text(
-                    text = stringResource(R.string.settings_company_default),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

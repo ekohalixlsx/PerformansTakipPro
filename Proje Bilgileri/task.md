@@ -26,3 +26,12 @@
 - [x] Create Google_Apps_Script.js with setup instructions
 - [x] Set up GitHub Actions CI
 - [x] Push all updates to GitHub
+
+## Polish & Revisions
+- [ ] App Name -> "Performans Takip Pro"
+- [ ] App Icon -> [performans1.png](file:///c:/projects/PerformansTakipPro/Proje%20Bilgileri/performans1.png)
+- [ ] Add "Developed by İlyas YEŞİL" to Settings
+- [ ] Add "Hakkında" (About) menu in Settings
+- [ ] Create `AboutScreen.kt` with version, usage, copyright, and dev email
+- [ ] Add README.md to GitHub
+- [ ] Verify successful APK build

@@ -37,14 +37,17 @@ import com.ekomak.performanstakippro.ui.theme.*
 
 sealed class Screen(
     val route: String,
-    val titleRes: Int,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val titleRes: Int? = null,
+    val selectedIcon: ImageVector? = null,
+    val unselectedIcon: ImageVector? = null
 ) {
     data object Entry : Screen("entry", R.string.nav_entry, Icons.Filled.EditNote, Icons.Outlined.EditNote)
     data object History : Screen("history", R.string.nav_history, Icons.Filled.History, Icons.Outlined.History)
     data object Settings : Screen("settings", R.string.nav_settings, Icons.Filled.Settings, Icons.Outlined.Settings)
     data object Dashboard : Screen("dashboard", R.string.nav_dashboard, Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
+    
+    // Non-bottom-nav destinations
+    data object About : Screen("about")
 }
 
 val bottomNavItems = listOf(
@@ -96,15 +99,15 @@ fun AppNavigation() {
                                         )
                                     }
                                     Icon(
-                                        imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
-                                        contentDescription = stringResource(screen.titleRes),
+                                        imageVector = if (selected) screen.selectedIcon!! else screen.unselectedIcon!!,
+                                        contentDescription = stringResource(screen.titleRes!!),
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
                             },
                             label = {
                                 Text(
-                                    text = stringResource(screen.titleRes),
+                                    text = stringResource(screen.titleRes!!),
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             },
@@ -140,8 +143,17 @@ fun AppNavigation() {
         ) {
             composable(Screen.Entry.route) { EntryScreen() }
             composable(Screen.History.route) { HistoryScreen() }
-            composable(Screen.Settings.route) { SettingsScreen() }
+            composable(Screen.Settings.route) { 
+                SettingsScreen(
+                    onNavigateToAbout = { navController.navigate(Screen.About.route) }
+                ) 
+            }
             composable(Screen.Dashboard.route) { DashboardScreen() }
+            composable(Screen.About.route) {
+                com.ekomak.performanstakippro.ui.screens.settings.AboutScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

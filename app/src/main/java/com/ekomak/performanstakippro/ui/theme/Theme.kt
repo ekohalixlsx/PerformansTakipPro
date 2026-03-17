@@ -71,6 +71,9 @@ fun PerformansTakipProTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
+    
+    // Set dynamic custom colors
+    AppColors.isDark = darkTheme
 
     MaterialTheme(
         colorScheme = colorScheme,

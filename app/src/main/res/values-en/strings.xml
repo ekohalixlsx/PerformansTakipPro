@@ -77,4 +77,18 @@
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="select">Select</string>
+
+    <!-- About Screen -->
+    <string name="about_title">About</string>
+    <string name="about_app_info">App Info</string>
+    <string name="about_app_desc">This application is developed to quickly and cleanly manage employee work and performance records.</string>
+    <string name="about_usage_info">Usage Info</string>
+    <string name="about_usage_steps">• Add and save performance records via the Entry screen.\n• View, edit, or delete records from the last 33 days on the History screen.\n• Monitor daily, weekly, and monthly performance visually on the Dashboard and export to PDF.</string>
+    <string name="about_copyright">Copyright &amp; Terms</string>
+    <string name="about_copyright_text">All rights reserved. Unauthorized copying or distributing is prohibited.</string>
+    <string name="about_developer">Developer</string>
+    <string name="about_developer_name">İlyas YEŞİL</string>
+    <string name="about_contact_dev">Contact Developer</string>
+    <string name="about_privacy_policy">Privacy Policy</string>
+    <string name="developer_credit">Developed by İlyas YEŞİL</string>
 </resources>
