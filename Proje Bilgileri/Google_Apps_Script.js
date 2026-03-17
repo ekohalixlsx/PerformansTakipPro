@@ -84,11 +84,16 @@ function getEmployees() {
   // İlk satır başlık kabul edilir, 1. satırdan (index 1) başlanıyor.
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    if (row[0] && row[0].toString().toLowerCase() === "aktif") {
+    var durum = row[0] ? row[0].toString().toUpperCase()
+      .replace("İ","I").replace("Ş","S").replace("Ç","C")
+      .replace("Ğ","G").replace("Ü","U").replace("Ö","O") : "";
+    
+    // "AKTIF" veya "AKTİF" her iki yazılışı da kabul et
+    if (durum.indexOf("AKT") === 0) {
       employees.push({
         durum: row[0].toString(),
         personelId: parseInt(row[1]) || 0,
-        adSoyad: row[2].toString(),
+        adSoyad: row[2] ? row[2].toString() : "",
         bolumAdi: row[3] ? row[3].toString() : "",
         departman: row[4] ? row[4].toString() : "",
         gorevi: row[5] ? row[5].toString() : ""
