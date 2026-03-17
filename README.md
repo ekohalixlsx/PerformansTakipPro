@@ -19,7 +19,7 @@ Bu uygulama, şirket personellerinin günlük iş ve performans kayıtlarını h
 
 Uygulama, Jetpack Compose ile **Material 3** standartlarına uygun, fakat tamamen özelleştirilmiş, modern "Deep Navy" ve "Teal" kontrastı kullanılarak tasarlanmıştır. Akıcı sayfa geçişleri, yumuşak gölgeler (shadows) ve pürüzsüz micro-animasyonlar barındırır.
 
-#### ℹ️ Daha fazla bilgi için lütfen geliştirici ile iletişime geçiniz.
+##### ℹ️ Daha fazla bilgi için lütfen geliştirici ile iletişime geçiniz.
 
 ## 👩‍💻 Geliştirici ve Hakkında
 
