@@ -210,9 +210,6 @@ fun SettingsScreen() {
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Primary)
             ) {
-                var webAppUrl by remember { mutableStateOf("") }
-                var urlSaved by remember { mutableStateOf(false) }
-
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -222,74 +219,53 @@ fun SettingsScreen() {
                             modifier = Modifier.size(28.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Google Sheets Bağlantısı",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = TextOnPrimary,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column {
+                            Text(
+                                text = "Google Sheets Bağlantısı",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = TextOnPrimary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Success)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Bağlı",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Success
+                                )
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Apps Script Web Uygulaması URL'sini girin. Bu URL, Google E-Tablonuza bağlanmanızı sağlar.",
+                        text = "Apps Script Web Uygulaması bağlantısı yapılandırılmış. E-Tablonuza veri okuma/yazma hazır.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextOnPrimary.copy(alpha = 0.7f),
                         lineHeight = 18.sp
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = webAppUrl,
-                        onValueChange = {
-                            webAppUrl = it
-                            urlSaved = false
-                        },
-                        placeholder = {
-                            Text(
-                                "https://script.google.com/macros/s/.../exec",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextOnPrimary.copy(alpha = 0.3f)
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = MaterialTheme.typography.bodySmall.copy(
-                            color = TextOnPrimary
-                        ),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Accent,
-                            unfocusedBorderColor = TextOnPrimary.copy(alpha = 0.3f),
-                            cursorColor = Accent
-                        )
-                    )
-
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Button(
-                        onClick = {
-                            // TODO: Save URL to PreferencesManager
-                            urlSaved = true
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (urlSaved) Success else Accent,
-                            contentColor = TextOnAccent
-                        )
+                    // Truncated URL display
+                    Surface(
+                        color = TextOnPrimary.copy(alpha = 0.08f),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        Icon(
-                            if (urlSaved) Icons.Filled.CheckCircle else Icons.Filled.Save,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (urlSaved) "Bağlantı Kaydedildi ✓" else "Bağlantıyı Kaydet",
-                            fontWeight = FontWeight.Bold
+                            text = "...AKfycbwVTeCwc5ww-BMVy9A.../exec",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = JetBrainsMono
+                            ),
+                            color = TextOnPrimary.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                         )
                     }
                 }
