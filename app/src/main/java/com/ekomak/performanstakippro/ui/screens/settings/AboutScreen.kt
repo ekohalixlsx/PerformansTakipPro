@@ -39,7 +39,8 @@ fun AboutScreen(viewModel: com.ekomak.performanstakippro.ui.MainViewModel, onNav
     val context = LocalContext.current
     val appVersion = "v${BuildConfig.VERSION_NAME}"
     val appUsers by viewModel.appUsers.collectAsState()
-    val developerEmail = appUsers.firstOrNull { it.rol.uppercase() == "DEVELOPER" }?.email ?: ""
+    val developerEmail = appUsers.firstOrNull { it.rol.uppercase() == "DEVELOPER" }?.email
+        ?: "ilyasyesil.develop@gmail.com" // Fallback email
 
     Scaffold(
         topBar = {
@@ -215,13 +216,11 @@ fun AboutScreen(viewModel: com.ekomak.performanstakippro.ui.MainViewModel, onNav
 
                     Button(
                         onClick = {
-                            if (developerEmail.isNotEmpty()) {
-                                val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                    data = Uri.parse("mailto:$developerEmail")
-                                    putExtra(Intent.EXTRA_SUBJECT, "Performans Takip Pro - İletişim")
-                                }
-                                context.startActivity(Intent.createChooser(intent, "Email Gönder"))
+                            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = Uri.parse("mailto:$developerEmail")
+                                putExtra(Intent.EXTRA_SUBJECT, "Performans Takip Pro - İletişim")
                             }
+                            context.startActivity(Intent.createChooser(intent, "Email Gönder"))
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(

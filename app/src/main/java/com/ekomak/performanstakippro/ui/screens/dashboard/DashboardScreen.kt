@@ -29,7 +29,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(viewModel: MainViewModel) {
+fun DashboardScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit = {}) {
     val records by viewModel.records.collectAsState()
     val employees by viewModel.employees.collectAsState()
     val selectedEmployee by viewModel.selectedEmployee.collectAsState()
@@ -72,7 +72,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
         var rememberMe by remember { mutableStateOf(false) }
 
         AlertDialog(
-            onDismissRequest = { /* Kapatılamaz — giriş zorunlu */ },
+            onDismissRequest = { showAdminLoginDialog = false; onNavigateBack() },
             icon = { Icon(Icons.Outlined.Lock, null, tint = Accent) },
             title = { Text("Yönetici Girişi") },
             text = {
@@ -120,7 +120,12 @@ fun DashboardScreen(viewModel: MainViewModel) {
                     }
                 }) { Text("Giriş", color = Accent) }
             },
-            dismissButton = {}
+            dismissButton = {
+                TextButton(onClick = {
+                    showAdminLoginDialog = false
+                    onNavigateBack()
+                }) { Text("İptal", color = TextSecondary) }
+            }
         )
     }
 
@@ -138,6 +143,10 @@ fun DashboardScreen(viewModel: MainViewModel) {
                 Spacer(modifier = Modifier.height(8.dp))
                 TextButton(onClick = { showAdminLoginDialog = true }) {
                     Text("Giriş Yap", color = Accent, fontWeight = FontWeight.Bold)
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                TextButton(onClick = { onNavigateBack() }) {
+                    Text("Geri", color = TextSecondary)
                 }
             }
         }

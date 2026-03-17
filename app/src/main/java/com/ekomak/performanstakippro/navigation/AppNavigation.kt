@@ -170,7 +170,20 @@ fun AppNavigation() {
                     onNavigateToAbout = { navController.navigate(Screen.About.route) }
                 )
             }
-            composable(Screen.Dashboard.route) { DashboardScreen(viewModel) }
+            composable(Screen.Dashboard.route) {
+                DashboardScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        navController.navigate(Screen.Entry.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
             composable(Screen.About.route) {
                 com.ekomak.performanstakippro.ui.screens.settings.AboutScreen(
                     viewModel = viewModel,
