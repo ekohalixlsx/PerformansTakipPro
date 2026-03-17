@@ -2,7 +2,6 @@
 
 Bu uygulama, şirket personellerinin günlük iş ve performans kayıtlarını hızlı, güvenli ve düzenli bir şekilde yönetmek için geliştirilmiş modern bir Android (Kotlin / Jetpack Compose) uygulamasıdır. 
 
-Uygulamanın en büyük özelliklerinden biri, veri tabanı olarak **Google E-Tablolar'ı (Google Sheets)** kullanmasıdır. Bu sayede hiçbir sunucu maliyeti, veritabanı kurulumu veya Google Cloud hesabı gerektirmeden, **tamamen ücretsiz** bir şekilde veriler bulutta tutulur.
 
 ## 📱 Özellikler
 
@@ -14,15 +13,7 @@ Uygulamanın en büyük özelliklerinden biri, veri tabanı olarak **Google E-Ta
 - **Akıllı Hatırlatıcı:** Geliştirilmiş **WorkManager** entegrasyonu sayesinde, her gün belirlediğiniz saatte "Bugün için performans kayıtlarını girdiniz mi?" hatırlatması.
 - **Çoklu Dil (i18n):** Uygulama üzerinden anlık Türkçe ve İngilizce dil değişimi.
 - **Dark Mode Uyumluluğu:** Modern, göz yormayan karanlık mod desteği.
-- **Tek Tıkla Senkronizasyon:** Ayarlar içinden sadece tek bir URL yapıştırarak tüm firmaya Google E-Tablo entegrasyonu sağlama.
 
-## 🛠️ Kurulum ve Google Sheets Entegrasyonu
-
-Uygulamanın çalışması için kendi Google E-Tablonuzu bağlamanız gerekir.
-
-1. **E-Tablo Oluşturun:** Drive'da yeni bir tablo oluşturun (`PERSONEL`, `Islemler`, `Bolumler`, `KAYITLAR` isimli sekmeler olmalı).
-2. **Apps Script:** `Proje Bilgileri/Google_Apps_Script.js` içindeki kodu kopyalayın ve E-Tablonuzun **Uzantılar -> Apps Script** alanına yapıştırıp "Web Uygulaması" (Herkes erişebilir) olarak dağıtın.
-3. **Uygulamaya Bağlayın:** Çıkan URL'yi, uygulamanızın Ayarlar kısmındaki veya `AppConfig.kt` içindeki ilgili alana ekleyin.
 
 ## 🎨 Tasarım Sistemi
 
