@@ -52,19 +52,34 @@ fun HistoryScreen(viewModel: MainViewModel) {
         Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }.time
     ).uppercase()
 
-    // Normalize tarih ve grupla
+    // Normalize tarih ve grupla — tarihe göre yeniden eskiye sırala
     val groupedRecords = remember(records) {
-        records.groupBy { record ->
-            val normalDate = DateUtils.normalizeDate(record.tarih)
-            when (normalDate) {
-                todayStr -> "BUGÜN — $todayDisplay"
-                yesterdayStr -> "DÜN — $yesterdayDisplay"
-                else -> {
-                    val displayDate = DateUtils.formatForDisplay(normalDate)
-                    displayDate ?: normalDate
+        records
+            .sortedByDescending { record -> DateUtils.parseToDate(record.tarih)?.time ?: 0L }
+            .groupBy { record ->
+                val normalDate = DateUtils.normalizeDate(record.tarih)
+                when (normalDate) {
+                    todayStr -> "BUGÜN — $todayDisplay"
+                    yesterdayStr -> "DÜN — $yesterdayDisplay"
+                    else -> {
+                        val displayDate = DateUtils.formatForDisplay(normalDate)
+                        displayDate ?: normalDate
+                    }
                 }
             }
-        }
+            .toSortedMap(compareByDescending { dateGroup ->
+                when {
+                    dateGroup.startsWith("BUGÜN") -> Long.MAX_VALUE
+                    dateGroup.startsWith("DÜN") -> Long.MAX_VALUE - 1
+                    else -> {
+                        // Parse display date back for sorting
+                        try {
+                            val sdf = java.text.SimpleDateFormat("d MMMM yyyy", Locale("tr"))
+                            sdf.parse(dateGroup)?.time ?: 0L
+                        } catch (_: Exception) { 0L }
+                    }
+                }
+            })
     }
 
     // Silme onay dialogu

@@ -265,37 +265,7 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Admin Panel
-            SectionTitle(stringResource(R.string.settings_admin_panel).uppercase())
-
-            SettingsCard {
-                if (isAdminLoggedIn) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Outlined.AdminPanelSettings, null, tint = Success, modifier = Modifier.size(22.dp))
-                        Spacer(modifier = Modifier.width(14.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Yönetici", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                            Text("Giriş yapıldı", style = MaterialTheme.typography.bodyLarge, color = Success, fontWeight = FontWeight.Medium)
-                        }
-                        TextButton(onClick = { viewModel.adminLogout() }) {
-                            Text("Çıkış", color = Danger)
-                        }
-                    }
-                } else {
-                    SettingsItem(
-                        icon = Icons.Outlined.Lock,
-                        title = stringResource(R.string.settings_admin_login),
-                        subtitle = stringResource(R.string.settings_admin_desc),
-                        onClick = { showAdminLoginDialog = true },
-                        showChevron = true
-                    )
-                }
-            }
+            // Admin Panel kaldırıldı — Dashboard'a taşındı
 
             Spacer(modifier = Modifier.height(10.dp))
 

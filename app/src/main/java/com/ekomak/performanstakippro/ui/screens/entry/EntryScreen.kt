@@ -250,7 +250,7 @@ fun EntryScreen(viewModel: MainViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Primary, PrimaryLight)))
-                    .padding(top = 48.dp, bottom = 16.dp, start = 20.dp, end = 20.dp)
+                    .padding(top = 48.dp, bottom = 10.dp, start = 20.dp, end = 20.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -291,14 +291,14 @@ fun EntryScreen(viewModel: MainViewModel) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .shadow(8.dp, RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBackground)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     // Date Field
                     Text(stringResource(R.string.entry_date).uppercase(),
@@ -428,9 +428,9 @@ fun EntryScreen(viewModel: MainViewModel) {
                                 quantity = cleaned
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                         textStyle = MaterialTheme.typography.headlineLarge.copy(
-                            textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 28.sp
+                            textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 22.sp
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,

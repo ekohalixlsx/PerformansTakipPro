@@ -34,15 +34,106 @@ fun DashboardScreen(viewModel: MainViewModel) {
     val employees by viewModel.employees.collectAsState()
     val selectedEmployee by viewModel.selectedEmployee.collectAsState()
     val isLoading by viewModel.isLoadingRecords.collectAsState()
+    val isAdminLoggedIn by viewModel.isAdminLoggedIn.collectAsState()
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var showEmployeeDropdown by remember { mutableStateOf(false) }
+    var showAdminLoginDialog by remember { mutableStateOf(false) }
+    var adminLoginError by remember { mutableStateOf(false) }
 
     val tabs = listOf(
         stringResource(R.string.dashboard_daily),
         stringResource(R.string.dashboard_weekly),
         stringResource(R.string.dashboard_monthly)
     )
+
+    // Admin giriş yapılmamışsa dialog göster
+    LaunchedEffect(isAdminLoggedIn) {
+        if (!isAdminLoggedIn) {
+            showAdminLoginDialog = true
+        }
+    }
+
+    // Admin Login Dialog
+    if (showAdminLoginDialog && !isAdminLoggedIn) {
+        var username by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+        var rememberMe by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { /* Kapatılamaz — giriş zorunlu */ },
+            icon = { Icon(Icons.Outlined.Lock, null, tint = Accent) },
+            title = { Text("Yönetici Girişi") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Dashboard'u görüntülemek için\nyönetici girişi gereklidir.",
+                        style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                    OutlinedTextField(
+                        value = username,
+                        onValueChange = { username = it; adminLoginError = false },
+                        label = { Text("Kullanıcı adı") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        isError = adminLoginError,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it; adminLoginError = false },
+                        label = { Text("Şifre") },
+                        singleLine = true,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        shape = RoundedCornerShape(12.dp),
+                        isError = adminLoginError,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (adminLoginError) {
+                        Text("Kullanıcı adı veya şifre hatalı",
+                            style = MaterialTheme.typography.bodySmall, color = Danger)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it },
+                            colors = CheckboxDefaults.colors(checkedColor = Accent))
+                        Text("Beni hatırla", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (viewModel.adminLogin(username, password)) {
+                        if (rememberMe) viewModel.setAdminRememberMe(true)
+                        showAdminLoginDialog = false
+                        adminLoginError = false
+                    } else {
+                        adminLoginError = true
+                    }
+                }) { Text("Giriş", color = Accent) }
+            },
+            dismissButton = {}
+        )
+    }
+
+    // Admin giriş yapılmamışsa sadece boş ekran göster
+    if (!isAdminLoggedIn) {
+        Box(
+            modifier = Modifier.fillMaxSize().background(Background),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(Icons.Outlined.Lock, null, tint = TextSecondary, modifier = Modifier.size(56.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("Yönetici girişi gerekli", color = TextSecondary,
+                    style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(onClick = { showAdminLoginDialog = true }) {
+                    Text("Giriş Yap", color = Accent, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        return
+    }
+
+    // === ADMIN GİRİŞ YAPILDI — DASHBOARD İÇERİĞİ ===
 
     // Seçili personele göre kayıtları filtrele
     val filteredRecords = remember(records, selectedEmployee) {
@@ -92,9 +183,15 @@ fun DashboardScreen(viewModel: MainViewModel) {
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = TextOnPrimary.copy(alpha = 0.7f))
                         }
-                        IconButton(onClick = { /* TODO: PDF */ }) {
-                            Icon(Icons.Outlined.PictureAsPdf, stringResource(R.string.dashboard_pdf),
-                                tint = TextOnPrimary.copy(alpha = 0.8f))
+                        Row {
+                            IconButton(onClick = { /* TODO: PDF */ }) {
+                                Icon(Icons.Outlined.PictureAsPdf, stringResource(R.string.dashboard_pdf),
+                                    tint = TextOnPrimary.copy(alpha = 0.8f))
+                            }
+                            IconButton(onClick = { viewModel.adminLogout() }) {
+                                Icon(Icons.Outlined.Logout, "Çıkış",
+                                    tint = TextOnPrimary.copy(alpha = 0.8f))
+                            }
                         }
                     }
 

@@ -74,6 +74,7 @@ fun AppNavigation() {
                     modifier = Modifier
                         .shadow(24.dp)
                         .navigationBarsPadding()
+                        .height(64.dp)
                 ) {
                     bottomNavItems.forEach { screen ->
                         val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
