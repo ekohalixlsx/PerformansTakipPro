@@ -92,6 +92,25 @@ class SheetsService(private val scriptUrl: String) {
         }
     }
 
+    suspend fun getUsers(): Result<List<AppUser>> = withContext(Dispatchers.IO) {
+        try {
+            val response = doGet("getUsers")
+            val data = response.jsonArray
+
+            val users = data.map { item ->
+                val obj = item.jsonObject
+                AppUser(
+                    email = obj.str("email"),
+                    rol = obj.str("rol"),
+                    adSoyad = obj.str("adSoyad")
+                )
+            }
+            Result.success(users)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getRecords(
         employeeName: String? = null,
         days: Int = 33

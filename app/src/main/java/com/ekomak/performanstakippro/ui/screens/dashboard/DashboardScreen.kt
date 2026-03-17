@@ -35,11 +35,15 @@ fun DashboardScreen(viewModel: MainViewModel) {
     val selectedEmployee by viewModel.selectedEmployee.collectAsState()
     val isLoading by viewModel.isLoadingRecords.collectAsState()
     val isAdminLoggedIn by viewModel.isAdminLoggedIn.collectAsState()
+    val appUsers by viewModel.appUsers.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var showEmployeeDropdown by remember { mutableStateOf(false) }
     var showAdminLoginDialog by remember { mutableStateOf(false) }
     var adminLoginError by remember { mutableStateOf(false) }
+    var showPdfEmailDialog by remember { mutableStateOf(false) }
+    var pdfGenerating by remember { mutableStateOf(false) }
 
     val tabs = listOf(
         stringResource(R.string.dashboard_daily),
@@ -51,6 +55,13 @@ fun DashboardScreen(viewModel: MainViewModel) {
     LaunchedEffect(isAdminLoggedIn) {
         if (!isAdminLoggedIn) {
             showAdminLoginDialog = true
+        }
+    }
+
+    // İlk personeli otomatik seç (Tüm Personel yok)
+    LaunchedEffect(employees) {
+        if (selectedEmployee == null && employees.isNotEmpty()) {
+            viewModel.setSelectedEmployee(employees.first())
         }
     }
 
@@ -142,6 +153,75 @@ fun DashboardScreen(viewModel: MainViewModel) {
         } else records
     }
 
+    // PDF Email Dialog
+    if (showPdfEmailDialog && selectedEmployee != null) {
+        var selectedUserIndex by remember { mutableIntStateOf(0) }
+        val userList = appUsers.filter { it.email.isNotEmpty() }
+
+        AlertDialog(
+            onDismissRequest = { showPdfEmailDialog = false },
+            icon = { Icon(Icons.Outlined.PictureAsPdf, null, tint = Accent) },
+            title = { Text("PDF Rapor Gönder") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("${selectedEmployee!!.adSoyad} için aylık rapor oluşturulup gönderilecek.",
+                        style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                    if (userList.isNotEmpty()) {
+                        Text("Alıcı:", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+                        userList.forEachIndexed { index, user ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                                    .clickable { selectedUserIndex = index }
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                RadioButton(
+                                    selected = selectedUserIndex == index,
+                                    onClick = { selectedUserIndex = index },
+                                    colors = RadioButtonDefaults.colors(selectedColor = Accent)
+                                )
+                                Text("${user.adSoyad} (${user.email})",
+                                    style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                            }
+                        }
+                    } else {
+                        Text("Email alıcısı bulunamadı", color = Danger,
+                            style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (userList.isNotEmpty()) {
+                            val recipient = userList[selectedUserIndex]
+                            showPdfEmailDialog = false
+                            // PDF oluştur ve email gönder
+                            val pdfService = com.ekomak.performanstakippro.util.PdfReportService(context)
+                            val pdfFile = pdfService.generateMonthlyReport(
+                                employee = selectedEmployee!!,
+                                records = filteredRecords
+                            )
+                            if (pdfFile != null) {
+                                pdfService.sendEmail(
+                                    pdfFile = pdfFile,
+                                    recipientEmail = recipient.email,
+                                    employeeName = selectedEmployee!!.adSoyad
+                                )
+                            }
+                        }
+                    },
+                    enabled = userList.isNotEmpty()
+                ) { Text("Gönder", color = if (userList.isNotEmpty()) Accent else TextSecondary) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPdfEmailDialog = false }) {
+                    Text("İptal")
+                }
+            }
+        )
+    }
+
     // İstatistik hesapla
     val totalMiktar = filteredRecords.sumOf { it.miktar }
     val avgMiktar = if (filteredRecords.isNotEmpty()) totalMiktar / filteredRecords.size else 0.0
@@ -184,7 +264,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
                                 color = TextOnPrimary.copy(alpha = 0.7f))
                         }
                         Row {
-                            IconButton(onClick = { /* TODO: PDF */ }) {
+                            IconButton(onClick = { showPdfEmailDialog = true }) {
                                 Icon(Icons.Outlined.PictureAsPdf, stringResource(R.string.dashboard_pdf),
                                     tint = TextOnPrimary.copy(alpha = 0.8f))
                             }
@@ -225,10 +305,6 @@ fun DashboardScreen(viewModel: MainViewModel) {
                             expanded = showEmployeeDropdown,
                             onDismissRequest = { showEmployeeDropdown = false }
                         ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.all_employees)) },
-                                onClick = { viewModel.setSelectedEmployee(null); showEmployeeDropdown = false }
-                            )
                             employees.forEach { emp ->
                                 DropdownMenuItem(
                                     text = { Text("${emp.adSoyad} (${emp.personelId})") },

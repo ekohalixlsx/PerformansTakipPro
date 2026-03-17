@@ -45,8 +45,18 @@ fun EntryScreen(viewModel: MainViewModel) {
     val savedWorkType by viewModel.defaultWorkType.collectAsState()
 
     var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
-    var selectedEmployee by remember(savedEmployee) { mutableStateOf(savedEmployee) }
-    var selectedWorkType by remember(savedWorkType) { mutableStateOf(savedWorkType) }
+    var selectedEmployee by remember { mutableStateOf<com.ekomak.performanstakippro.data.model.Employee?>(null) }
+    var selectedWorkType by remember { mutableStateOf<com.ekomak.performanstakippro.data.model.WorkType?>(null) }
+    var initialized by remember { mutableStateOf(false) }
+
+    // İlk açılışta Ayarlar'daki seçimleri kullan, sonra bağımsız
+    LaunchedEffect(savedEmployee, savedWorkType) {
+        if (!initialized && (savedEmployee != null || savedWorkType != null)) {
+            if (selectedEmployee == null) selectedEmployee = savedEmployee
+            if (selectedWorkType == null) selectedWorkType = savedWorkType
+            initialized = true
+        }
+    }
     var quantity by remember { mutableStateOf("") }
     var showEmployeeSheet by remember { mutableStateOf(false) }
     var showWorkTypeSheet by remember { mutableStateOf(false) }
@@ -428,9 +438,9 @@ fun EntryScreen(viewModel: MainViewModel) {
                                 quantity = cleaned
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
                         textStyle = MaterialTheme.typography.headlineLarge.copy(
-                            textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 22.sp
+                            textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 26.sp
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,

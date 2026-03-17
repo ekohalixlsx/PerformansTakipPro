@@ -15,6 +15,8 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -33,9 +35,11 @@ import com.ekomak.performanstakippro.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutScreen(onNavigateBack: () -> Unit) {
+fun AboutScreen(viewModel: com.ekomak.performanstakippro.ui.MainViewModel, onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val appVersion = "v${BuildConfig.VERSION_NAME}"
+    val appUsers by viewModel.appUsers.collectAsState()
+    val developerEmail = appUsers.firstOrNull { it.rol.uppercase() == "DEVELOPER" }?.email ?: ""
 
     Scaffold(
         topBar = {
@@ -211,19 +215,24 @@ fun AboutScreen(onNavigateBack: () -> Unit) {
 
                     Button(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("mailto:ilyasyesil.develop@gmail.com")
-                                putExtra(Intent.EXTRA_SUBJECT, "Performans Takip Pro - İletişim")
+                            if (developerEmail.isNotEmpty()) {
+                                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                    data = Uri.parse("mailto:$developerEmail")
+                                    putExtra(Intent.EXTRA_SUBJECT, "Performans Takip Pro - İletişim")
+                                }
+                                context.startActivity(Intent.createChooser(intent, "Email Gönder"))
                             }
-                            context.startActivity(Intent.createChooser(intent, "Email Gönder"))
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Accent,
+                            contentColor = Color.White
+                        ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Filled.Email, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Filled.Email, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = stringResource(R.string.about_contact_dev))
+                        Text(text = stringResource(R.string.about_contact_dev), color = Color.White)
                     }
                     
                     Spacer(modifier = Modifier.height(8.dp))

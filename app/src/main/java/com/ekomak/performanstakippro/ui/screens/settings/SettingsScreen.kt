@@ -41,16 +41,22 @@ fun SettingsScreen(
     val defaultWorkType by viewModel.defaultWorkType.collectAsState()
     val isConnected by viewModel.isConnected.collectAsState()
 
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var selectedLanguage by remember { mutableStateOf("tr") }
-    var notificationHour by remember { mutableIntStateOf(16) }
-    var notificationMinute by remember { mutableIntStateOf(45) }
-    var showEmployeeSheet by remember { mutableStateOf(false) }
-    var showWorkTypeSheet by remember { mutableStateOf(false) }
-    var companyName by remember { mutableStateOf("-") }
+    var companyName by remember { mutableStateOf("") }
     var showAdminLoginDialog by remember { mutableStateOf(false) }
     var adminLoginError by remember { mutableStateOf(false) }
     val isAdminLoggedIn by viewModel.isAdminLoggedIn.collectAsState()
+    var showCompanyNameDialog by remember { mutableStateOf(false) }
+    var showEmployeeSheet by remember { mutableStateOf(false) }
+    var showWorkTypeSheet by remember { mutableStateOf(false) }
+    var notificationsEnabled by remember { mutableStateOf(true) }
+    var notificationHour by remember { mutableIntStateOf(16) }
+    var notificationMinute by remember { mutableIntStateOf(45) }
+
+    // SharedPreferences'ten şirket adını yükle
+    val prefs = context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+    LaunchedEffect(Unit) {
+        companyName = prefs.getString("company_name", "-") ?: "-"
+    }
 
     // Employee selection bottom sheet — LazyColumn ile scroll
     if (showEmployeeSheet) {
@@ -196,17 +202,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Business,
                     title = stringResource(R.string.settings_company),
                     subtitle = companyName.ifEmpty { "-" },
-                    onClick = { /* TODO: Düzenleme dialogu */ },
-                    showChevron = true
-                )
-                HorizontalDivider(color = Divider, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
-
-                SettingsItem(
-                    icon = Icons.Outlined.Language,
-                    title = stringResource(R.string.settings_language),
-                    subtitle = if (selectedLanguage == "tr") stringResource(R.string.settings_language_tr)
-                              else stringResource(R.string.settings_language_en),
-                    onClick = { selectedLanguage = if (selectedLanguage == "tr") "en" else "tr" },
+                    onClick = { showCompanyNameDialog = true },
                     showChevron = true
                 )
             }
@@ -376,6 +372,38 @@ fun SettingsScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showAdminLoginDialog = false; adminLoginError = false }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            )
+        }
+
+        // Company Name Edit Dialog
+        if (showCompanyNameDialog) {
+            var editedName by remember { mutableStateOf(companyName) }
+            AlertDialog(
+                onDismissRequest = { showCompanyNameDialog = false },
+                icon = { Icon(Icons.Outlined.Business, null, tint = Accent) },
+                title = { Text(stringResource(R.string.settings_company)) },
+                text = {
+                    OutlinedTextField(
+                        value = editedName,
+                        onValueChange = { editedName = it },
+                        label = { Text("Şirket adı") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        companyName = editedName
+                        prefs.edit().putString("company_name", editedName).apply()
+                        showCompanyNameDialog = false
+                    }) { Text("Kaydet", color = Accent) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showCompanyNameDialog = false }) {
                         Text(stringResource(R.string.cancel))
                     }
                 }

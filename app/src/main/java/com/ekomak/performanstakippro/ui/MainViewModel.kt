@@ -35,6 +35,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _departments = MutableStateFlow<List<Department>>(emptyList())
     val departments: StateFlow<List<Department>> = _departments.asStateFlow()
 
+    // App Users (KULLANICILAR)
+    private val _appUsers = MutableStateFlow<List<AppUser>>(emptyList())
+    val appUsers: StateFlow<List<AppUser>> = _appUsers.asStateFlow()
+
+    val developerEmail: String get() = _appUsers.value
+        .firstOrNull { it.rol.uppercase() == "DEVELOPER" }?.email ?: ""
+
     // Records
     private val _records = MutableStateFlow<List<PerformanceRecord>>(emptyList())
     val records: StateFlow<List<PerformanceRecord>> = _records.asStateFlow()
@@ -92,10 +99,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val employeesJob = launch { loadEmployees() }
                 val workTypesJob = launch { loadWorkTypes() }
                 val departmentsJob = launch { loadDepartments() }
+                val usersJob = launch { loadUsers() }
 
                 employeesJob.join()
                 workTypesJob.join()
                 departmentsJob.join()
+                usersJob.join()
 
                 _isConnected.value = true
 
@@ -141,6 +150,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         sheetsService.getDepartments().fold(
             onSuccess = { _departments.value = it },
             onFailure = { _error.value = "Bölümler yüklenemedi: ${it.message}" }
+        )
+    }
+
+    private suspend fun loadUsers() {
+        sheetsService.getUsers().fold(
+            onSuccess = { _appUsers.value = it },
+            onFailure = { /* Kullanıcılar opsiyonel, hata gösterme */ }
         )
     }
 

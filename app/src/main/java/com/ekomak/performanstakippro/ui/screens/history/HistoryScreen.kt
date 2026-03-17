@@ -36,12 +36,19 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(viewModel: MainViewModel) {
-    val records by viewModel.records.collectAsState()
+    val allRecords by viewModel.records.collectAsState()
     val isLoading by viewModel.isLoadingRecords.collectAsState()
     val selectedEmployee by viewModel.selectedEmployee.collectAsState()
     var showDeleteDialog by remember { mutableStateOf<PerformanceRecord?>(null) }
     var showEditDialog by remember { mutableStateOf<PerformanceRecord?>(null) }
     var deleteError by remember { mutableStateOf<String?>(null) }
+
+    // Ayarlar'daki seçili personele göre filtrele
+    val records = remember(allRecords, selectedEmployee) {
+        if (selectedEmployee != null) {
+            allRecords.filter { it.personelId == selectedEmployee!!.personelId }
+        } else allRecords
+    }
 
     val todayStr = SimpleDateFormat("dd/MM/yyyy", Locale("tr")).format(Date())
     val yesterdayStr = SimpleDateFormat("dd/MM/yyyy", Locale("tr")).format(
