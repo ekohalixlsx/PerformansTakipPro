@@ -233,11 +233,14 @@ function getRecords(days, employee) {
 function saveRecord(data) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_KAYITLAR);
 
+  // Otomatik kayit_id oluştur (PropertiesService ile kalıcı sayaç)
+  var kayitId = getNextKayitId();
+
   // Miktarı Türkçe Excel formatında virgülle kaydetmek istiyorsanız:
   var miktarStr = data.miktar.toString().replace(".", ",");
 
   sheet.appendRow([
-    data.kayitId,
+    kayitId,
     data.tarih,
     data.personelId,
     data.adSoyad,
@@ -248,7 +251,20 @@ function saveRecord(data) {
     data.created
   ]);
 
-  return { success: true };
+  return { success: true, kayitId: kayitId };
+}
+
+/**
+ * Otomatik artan kayıt numarası üretir.
+ * PropertiesService kullanır — tablodaki veriler silinse bile sayaç korunur.
+ * Format: 00001, 00002, 00003, ...
+ */
+function getNextKayitId() {
+  var props = PropertiesService.getScriptProperties();
+  var lastId = parseInt(props.getProperty('lastKayitId') || '0');
+  var newId = lastId + 1;
+  props.setProperty('lastKayitId', newId.toString());
+  return ('00000' + newId).slice(-5);
 }
 
 function updateRecord(data) {

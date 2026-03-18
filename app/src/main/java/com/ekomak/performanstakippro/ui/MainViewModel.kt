@@ -250,8 +250,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // ==================== ADMİN ====================
 
     fun adminLogin(username: String, password: String): Boolean {
-        val savedUsername = prefs.getString("admin_username", "EKO") ?: "EKO"
-        val savedPassword = prefs.getString("admin_password", "EKO2026") ?: "EKO2026"
+        val savedUsername = prefs.getString("admin_username", "eko") ?: "eko"
+        val savedPassword = prefs.getString("admin_password", "eko2026") ?: "eko2026"
 
         return if (username == savedUsername && password == savedPassword) {
             _isAdminLoggedIn.value = true

@@ -1,32 +1,79 @@
 # Performans Takip Pro
 
-Bu uygulama, şirket personellerinin günlük iş ve performans kayıtlarını hızlı, güvenli ve düzenli bir şekilde yönetmek için geliştirilmiş modern bir Android (Kotlin / Jetpack Compose) uygulamasıdır. 
+Şirket ve kurum personellerinin günlük iş ve performans kayıtlarını hızlı, kolay ve düzenli şekilde yönetmek için geliştirilmiş modern bir Android uygulamasıdır.
 
+## 📱 Uygulama Hakkında
 
-## 📱 Özellikler
+Performans Takip Pro, üretim ve hizmet sektöründe çalışan personelin günlük yaptığı işleri kayıt altına alır, geçmişe dönük takip sağlar ve yöneticilere performans analizleri sunar. Veriler güvenli şekilde Google Sheets üzerinde saklanır.
 
-- **Personel Özelinde Kayıt:** Personel seçimi, otomatik departman eşleşmesi.
-- **İşlem Modülleri:** Yapılacak işlemler ve miktarlarının kolayca seçilmesi ve kaydedilmesi.
-- **Geçmiş Ekranı:** Son 33 günlük kayıtları listeleme, düzenleme ve silme.
-- **Gelişmiş Dashboard:** Günlük, haftalık, aylık performansı grafiksel olarak izleme ve analiz etme.
-- **PDF Dışa Aktarım:** Performans raporlarını PDF formatında dışa aktarma (planlanan özellik).
-- **Akıllı Hatırlatıcı:** Geliştirilmiş **WorkManager** entegrasyonu sayesinde, her gün belirlediğiniz saatte "Bugün için performans kayıtlarını girdiniz mi?" hatırlatması.
-- **Çoklu Dil (i18n):** Uygulama üzerinden anlık Türkçe ve İngilizce dil değişimi.
-- **Dark Mode Uyumluluğu:** Modern, göz yormayan karanlık mod desteği.
+## 🚀 Özellikler
 
+### Kayıt Ekranı
+- Tarihe göre çalışma kaydı oluşturma
+- Personel seçimi (aranabilir liste, otomatik departman eşleşmesi)
+- İş türü ve miktar girişi (birim otomatik gelir)
+- Tek tuşla hızlı kayıt
 
-## 🎨 Tasarım Sistemi
+### Geçmiş Ekranı
+- Son 33 günlük kayıtları listeleme
+- Personele göre filtreleme ve tarih sıralaması
+- Kayıt düzenleme ve silme
+- Günlük gruplandırılmış kompakt kart görünümü
 
-Uygulama, Jetpack Compose ile **Material 3** standartlarına uygun, fakat tamamen özelleştirilmiş, modern "Deep Navy" ve "Teal" kontrastı kullanılarak tasarlanmıştır. Akıcı sayfa geçişleri, yumuşak gölgeler (shadows) ve pürüzsüz micro-animasyonlar barındırır.
+### Dashboard (Yönetici Paneli)
+- Admin girişi gerektirir (güvenli erişim)
+- Günlük / Haftalık / Aylık performans özetleri
+- Personel bazlı detaylı analiz
+- PDF rapor oluşturma ve e-posta ile gönderme
+- Şirket adı PDF raporlara otomatik eklenir
 
-##### ℹ️ Daha fazla bilgi için lütfen geliştirici ile iletişime geçiniz.
+### Ayarlar
+- Varsayılan personel ve iş türü seçimi
+- Şirket adı düzenleme
+- Günlük hatırlatıcı bildirimi (saat ayarlanabilir)
+- Bağlantı durumu kontrolü
+- Hakkında sayfası ve geliştirici iletişimi
 
-## 👩‍💻 Geliştirici ve Hakkında
+### Ek Özellikler
+- **İlk kullanım hoşgeldin ekranı:** Uygulama ilk açıldığında kullanıcı kendini personel listesinden seçer
+- **Yatay kaydırma (Swipe):** Ekranlar arasında parmakla kaydırarak geçiş
+- **Karanlık mod** uyumlu modern tasarım
+- **WorkManager** ile günlük hatırlatıcı bildirimi
+- **Şifre değiştirme:** Dashboard üzerinden admin şifresi değiştirilebilir
+- **Otomatik Kayıt Numarası:** Her yeni kayıda otomatik sıra numarası verilir (tablo silinse bile devam eder)
 
-Uygulama içerisindeki **Ayarlar > Hakkında** sayfasından kullanım kılavuzuna ulaşabilirsiniz. 
+## 📋 Kullanım Kılavuzu
 
-**Geliştirici:** İlyas YEŞİL
-**İletişim:** ilyasyesil.develop@gmail.com
+### Kurulum
+1. APK dosyasını telefonunuza yükleyin
+2. İlk açılışta hoşgeldin ekranında kendinizi personel listesinden seçin
+3. Bu seçim Ayarlar ekranına kaydedilir
+
+### Günlük Kullanım
+1. **Kayıt ekranından** tarihi, personelinizi, iş türünü ve miktarını seçip kaydedin
+2. **Geçmiş ekranından** eski kayıtlarınızı görüntüleyin, düzenleyin veya silin
+3. **Ayarlar ekranından** varsayılan tercihlerinizi değiştirin
+
+### Yönetici Erişimi
+1. Dashboard ekranına gidin
+2. "Giriş Yap" butonuna tıklayın
+3. Yönetici bilgilerinizi girin
+4. Performans analizlerini inceleyin, PDF rapor oluşturup e-posta ile gönderin
+
+## 📦 Google Sheets Bağlantısı
+
+Uygulama, verilerini Google Sheets üzerinde saklar. Kurulum için:
+1. Google Drive'da yeni bir E-Tablo oluşturun
+2. Gerekli sayfa sekmelerini ekleyin (PERSONEL, KAYITLAR, Islemler, Bolumler, KULLANICILAR)
+3. Apps Script kodunu yapıştırıp Web Uygulaması olarak dağıtın
+4. URL'yi uygulamadaki Ayarlar bölümüne girin
+
+> Detaylı kurulum için `Proje Bilgileri/Google_Sheets_Kurulum_Rehberi.md` dosyasına bakın.
+
+## 👨‍💻 Geliştirici
+
+**İlyas YEŞİL**
+📧 ilyasyesil.develop@gmail.com
 
 ---
 *Tüm hakları saklıdır. İzinsiz kopyalanamaz, dağıtılamaz.*

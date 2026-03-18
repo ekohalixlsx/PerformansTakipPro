@@ -20,6 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.ekomak.performanstakippro.R
 import com.ekomak.performanstakippro.data.model.PerformanceRecord
 import com.ekomak.performanstakippro.ui.MainViewModel
@@ -44,6 +46,7 @@ fun DashboardScreen(viewModel: MainViewModel) {
     var adminLoginError by remember { mutableStateOf(false) }
     var showPdfEmailDialog by remember { mutableStateOf(false) }
     var pdfGenerating by remember { mutableStateOf(false) }
+    var showPasswordChangeDialog by remember { mutableStateOf(false) }
 
     val tabs = listOf(
         stringResource(R.string.dashboard_daily),
@@ -60,101 +63,311 @@ fun DashboardScreen(viewModel: MainViewModel) {
         }
     }
 
-    // Admin Login Dialog
+    // Premium Admin Login Dialog
     if (showAdminLoginDialog && !isAdminLoggedIn) {
         var username by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         var rememberMe by remember { mutableStateOf(false) }
 
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showAdminLoginDialog = false },
-            icon = { Icon(Icons.Outlined.Lock, null, tint = Accent) },
-            title = { Text("Yönetici Girişi") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Dashboard'u görüntülemek için\nyönetici girişi gereklidir.",
-                        style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 28.dp)
+                    .shadow(24.dp, RoundedCornerShape(24.dp)),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(Brush.verticalGradient(listOf(
+                            Color(0xFF1A1F36), Color(0xFF0F1425)
+                        )))
+                        .padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Shield Icon
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Brush.radialGradient(listOf(
+                                Accent.copy(alpha = 0.25f), Color.Transparent
+                            ))),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Shield, null,
+                            tint = Accent, modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Admin Girişi",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("Lütfen bilgilerinizi girin",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.6f))
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Username Field
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it; adminLoginError = false },
-                        label = { Text("Kullanıcı adı") },
+                        placeholder = { Text("Kullanıcı Adı", color = Color.White.copy(alpha = 0.4f)) },
+                        leadingIcon = { Icon(Icons.Outlined.Person, null, tint = Accent.copy(alpha = 0.7f)) },
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         isError = adminLoginError,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Accent, unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
+                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                            cursorColor = Accent,
+                            focusedContainerColor = Color.White.copy(alpha = 0.05f),
+                            unfocusedContainerColor = Color.White.copy(alpha = 0.03f),
+                            errorBorderColor = Danger
+                        )
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Password Field
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it; adminLoginError = false },
-                        label = { Text("Şifre") },
+                        placeholder = { Text("Şifre", color = Color.White.copy(alpha = 0.4f)) },
+                        leadingIcon = { Icon(Icons.Outlined.Lock, null, tint = Accent.copy(alpha = 0.7f)) },
                         singleLine = true,
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         isError = adminLoginError,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Accent, unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
+                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                            cursorColor = Accent,
+                            focusedContainerColor = Color.White.copy(alpha = 0.05f),
+                            unfocusedContainerColor = Color.White.copy(alpha = 0.03f),
+                            errorBorderColor = Danger
+                        )
                     )
+
                     if (adminLoginError) {
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text("Kullanıcı adı veya şifre hatalı",
                             style = MaterialTheme.typography.bodySmall, color = Danger)
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    // Remember Me
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it },
-                            colors = CheckboxDefaults.colors(checkedColor = Accent))
-                        Text("Beni hatırla", style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = Accent,
+                                uncheckedColor = Color.White.copy(alpha = 0.4f),
+                                checkmarkColor = Color.White
+                            ))
+                        Text("Beni hatırla", style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.8f))
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Login Button — gradient
+                    Button(
+                        onClick = {
+                            if (viewModel.adminLogin(username, password)) {
+                                if (rememberMe) viewModel.setAdminRememberMe(true)
+                                showAdminLoginDialog = false
+                                adminLoginError = false
+                            } else {
+                                adminLoginError = true
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        ),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Brush.horizontalGradient(listOf(
+                                    Accent, Color(0xFF8B5CF6)
+                                )), shape = RoundedCornerShape(14.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Giriş Yap", fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    TextButton(onClick = { showAdminLoginDialog = false }) {
+                        Text("İptal", color = Color.White.copy(alpha = 0.5f))
                     }
                 }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    if (viewModel.adminLogin(username, password)) {
-                        if (rememberMe) viewModel.setAdminRememberMe(true)
-                        showAdminLoginDialog = false
-                        adminLoginError = false
-                    } else {
-                        adminLoginError = true
-                    }
-                }) { Text("Giriş", color = Accent) }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showAdminLoginDialog = false
-                }) { Text("İptal", color = TextSecondary) }
             }
-        )
+        }
+    }
+
+    // Password Change Dialog
+    if (showPasswordChangeDialog) {
+        var currentPassword by remember { mutableStateOf("") }
+        var newPassword by remember { mutableStateOf("") }
+        var confirmPassword by remember { mutableStateOf("") }
+        var passwordError by remember { mutableStateOf<String?>(null) }
+
+        Dialog(onDismissRequest = { showPasswordChangeDialog = false }) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(Brush.verticalGradient(listOf(
+                            Color(0xFF1A1F36), Color(0xFF0F1425)
+                        )))
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(Icons.Outlined.Key, null, tint = Accent, modifier = Modifier.size(36.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("Şifre Değiştir", style = MaterialTheme.typography.titleLarge,
+                        color = Color.White, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    val fieldColors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Accent, unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
+                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                        cursorColor = Accent,
+                        focusedContainerColor = Color.White.copy(alpha = 0.05f),
+                        unfocusedContainerColor = Color.White.copy(alpha = 0.03f)
+                    )
+
+                    OutlinedTextField(value = currentPassword, onValueChange = { currentPassword = it; passwordError = null },
+                        placeholder = { Text("Mevcut Şifre", color = Color.White.copy(alpha = 0.4f)) },
+                        singleLine = true, shape = RoundedCornerShape(12.dp),
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(), colors = fieldColors)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(value = newPassword, onValueChange = { newPassword = it; passwordError = null },
+                        placeholder = { Text("Yeni Şifre", color = Color.White.copy(alpha = 0.4f)) },
+                        singleLine = true, shape = RoundedCornerShape(12.dp),
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(), colors = fieldColors)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(value = confirmPassword, onValueChange = { confirmPassword = it; passwordError = null },
+                        placeholder = { Text("Yeni Şifre (Tekrar)", color = Color.White.copy(alpha = 0.4f)) },
+                        singleLine = true, shape = RoundedCornerShape(12.dp),
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(), colors = fieldColors)
+
+                    if (passwordError != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(passwordError!!, style = MaterialTheme.typography.bodySmall, color = Danger)
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedButton(
+                            onClick = { showPasswordChangeDialog = false },
+                            modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White.copy(alpha = 0.7f)),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                        ) { Text("İptal") }
+                        Button(
+                            onClick = {
+                                val prefs = context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+                                val savedPassword = prefs.getString("admin_password", "eko2026") ?: "eko2026"
+                                when {
+                                    currentPassword != savedPassword -> passwordError = "Mevcut şifre hatalı"
+                                    newPassword.length < 4 -> passwordError = "Şifre en az 4 karakter olmalı"
+                                    newPassword != confirmPassword -> passwordError = "Şifreler eşleşmiyor"
+                                    else -> {
+                                        viewModel.changeAdminCredentials(
+                                            prefs.getString("admin_username", "eko") ?: "eko",
+                                            newPassword
+                                        )
+                                        showPasswordChangeDialog = false
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Accent)
+                        ) { Text("Kaydet", color = Color.White, fontWeight = FontWeight.Bold) }
+                    }
+                }
+            }
+        }
     }
 
     // Admin giriş yapılmamışsa giriş ekranı göster
     if (!isAdminLoggedIn) {
         Box(
-            modifier = Modifier.fillMaxSize().background(Background),
+            modifier = Modifier.fillMaxSize().background(
+                Brush.verticalGradient(listOf(Primary, PrimaryDark))
+            ),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Outlined.Lock, null, tint = TextSecondary, modifier = Modifier.size(64.dp))
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Yönetici Paneli", color = TextPrimary,
-                    style = MaterialTheme.typography.headlineSmall,
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Accent.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Filled.Shield, null, tint = Accent, modifier = Modifier.size(44.dp))
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("Yönetici Paneli", color = Color.White,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(6.dp))
                 Text("Dashboard'u görüntülemek için\nyönetici girişi gereklidir.",
-                    color = TextSecondary,
+                    color = Color.White.copy(alpha = 0.6f),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center)
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
                 Button(
                     onClick = { showAdminLoginDialog = true },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Accent,
-                        contentColor = TextOnAccent
-                    ),
+                    modifier = Modifier.padding(horizontal = 48.dp).fillMaxWidth().height(50.dp),
                     shape = RoundedCornerShape(14.dp),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
-                    modifier = Modifier.padding(horizontal = 48.dp).fillMaxWidth()
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues(0.dp)
                 ) {
-                    Icon(Icons.Outlined.Lock, null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Giriş Yap", fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium)
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                            .background(Brush.horizontalGradient(listOf(
+                                Accent, Color(0xFF8B5CF6)
+                            )), shape = RoundedCornerShape(14.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.Lock, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Giriş Yap", fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium, color = Color.White)
+                        }
+                    }
                 }
             }
         }
@@ -286,6 +499,10 @@ fun DashboardScreen(viewModel: MainViewModel) {
                         Row {
                             IconButton(onClick = { showPdfEmailDialog = true }) {
                                 Icon(Icons.Outlined.PictureAsPdf, stringResource(R.string.dashboard_pdf),
+                                    tint = TextOnPrimary.copy(alpha = 0.8f))
+                            }
+                            IconButton(onClick = { showPasswordChangeDialog = true }) {
+                                Icon(Icons.Outlined.Key, "Şifre Değiştir",
                                     tint = TextOnPrimary.copy(alpha = 0.8f))
                             }
                             IconButton(onClick = { viewModel.adminLogout() }) {

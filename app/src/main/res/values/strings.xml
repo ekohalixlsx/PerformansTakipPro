@@ -86,9 +86,9 @@
     <!-- About Screen -->
     <string name="about_title">Hakkında</string>
     <string name="about_app_info">Uygulama Bilgisi</string>
-    <string name="about_app_desc">Bu uygulama, personel iş ve performans kayıtlarını hızlı ve düzenli şekilde yönetmek için geliştirilmiştir.</string>
+    <string name="about_app_desc">Performans Takip Pro, şirket ve kurum personellerinin günlük iş ve performans kayıtlarını hızlı, kolay ve düzenli şekilde yönetmek için geliştirilmiş modern bir Android uygulamasıdır. Veriler güvenli şekilde Google Sheets üzerinde saklanır.</string>
     <string name="about_usage_info">Kullanım Bilgisi</string>
-    <string name="about_usage_steps">• Kayıt ekranından personelin işlem ve miktar bilgilerini girip kaydedin.\n• Geçmiş ekranından son 33 günün kayıtlarını listeleyip düzenleyebilir veya silebilirsiniz.\n• Dashboard üzerinden günlük, haftalık ve aylık performansları grafiksel olarak inceleyebilir, PDF olarak dışa aktarabilirsiniz.</string>
+    <string name="about_usage_steps">• Kayıt ekranından personelin tarih, işlem ve miktar bilgilerini girip tek tuşla kaydedin.\n• Geçmiş ekranından son 33 günün kayıtlarını listeleyip, filtreleyebilir, düzenleyebilir veya silebilirsiniz.\n• Dashboard üzerinden günlük, haftalık ve aylık performansları grafiksel olarak inceleyebilir, PDF olarak dışa aktarıp e-posta ile gönderebilirsiniz.\n• Ayarlar ekranından varsayılan personel ve iş türü seçimi, şirket adı düzenleme ve bildirim ayarlarını yapabilirsiniz.\n• Ekranlar arasında parmağınızla kaydırarak veya alt menüden geçiş yapabilirsiniz.</string>
     <string name="about_copyright">Telif &amp; Haklar</string>
     <string name="about_copyright_text">Tüm hakları saklıdır. İzinsiz kopyalanamaz, dağıtılamaz.</string>
     <string name="about_developer">Geliştirici</string>
