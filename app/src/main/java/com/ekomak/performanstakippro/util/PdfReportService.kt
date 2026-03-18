@@ -28,7 +28,8 @@ class PdfReportService(private val context: Context) {
      */
     fun generateMonthlyReport(
         employee: Employee,
-        records: List<PerformanceRecord>
+        records: List<PerformanceRecord>,
+        companyName: String = ""
     ): File? {
         try {
             val document = PdfDocument()
@@ -87,7 +88,12 @@ class PdfReportService(private val context: Context) {
                 textSize = 11f
                 isAntiAlias = true
             }
-            canvas.drawText("PERFORMANS TAKİP PRO — AYLIK RAPOR", 30f, 40f, headerPaint)
+            val reportTitle = if (companyName.isNotEmpty()) {
+                "${companyName.uppercase()} — AYLIK RAPOR"
+            } else {
+                "PERFORMANS TAKİP — AYLIK RAPOR"
+            }
+            canvas.drawText(reportTitle, 30f, 40f, headerPaint)
 
             val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("tr"))
             canvas.drawText("Rapor Tarihi: ${dateFormat.format(Date())}", 30f, 60f, headerSubPaint)
@@ -179,7 +185,12 @@ class PdfReportService(private val context: Context) {
                 textSize = 9f
                 isAntiAlias = true
             }
-            canvas.drawText("Performans Takip © 2026 | Otomatik oluşturulmuş rapor",
+            val footerText = if (companyName.isNotEmpty()) {
+                "$companyName © 2026 | Performans Takip | Otomatik oluşturulmuş rapor"
+            } else {
+                "Performans Takip © 2026 | Otomatik oluşturulmuş rapor"
+            }
+            canvas.drawText(footerText,
                 30f, (pageHeight - 20).toFloat(), footerPaint)
 
             document.finishPage(page)

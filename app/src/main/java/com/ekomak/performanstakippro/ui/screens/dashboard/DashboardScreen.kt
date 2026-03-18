@@ -29,7 +29,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit = {}) {
+fun DashboardScreen(viewModel: MainViewModel) {
     val records by viewModel.records.collectAsState()
     val employees by viewModel.employees.collectAsState()
     val selectedEmployee by viewModel.selectedEmployee.collectAsState()
@@ -51,12 +51,7 @@ fun DashboardScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit = {}) {
         stringResource(R.string.dashboard_monthly)
     )
 
-    // Admin giriş yapılmamışsa dialog göster
-    LaunchedEffect(isAdminLoggedIn) {
-        if (!isAdminLoggedIn) {
-            showAdminLoginDialog = true
-        }
-    }
+    // Admin giriş yapılmamışsa kullanıcı butona tıklayınca dialog açılacak
 
     // İlk personeli otomatik seç (Tüm Personel yok)
     LaunchedEffect(employees) {
@@ -72,7 +67,7 @@ fun DashboardScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit = {}) {
         var rememberMe by remember { mutableStateOf(false) }
 
         AlertDialog(
-            onDismissRequest = { showAdminLoginDialog = false; onNavigateBack() },
+            onDismissRequest = { showAdminLoginDialog = false },
             icon = { Icon(Icons.Outlined.Lock, null, tint = Accent) },
             title = { Text("Yönetici Girişi") },
             text = {
@@ -123,30 +118,43 @@ fun DashboardScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit = {}) {
             dismissButton = {
                 TextButton(onClick = {
                     showAdminLoginDialog = false
-                    onNavigateBack()
                 }) { Text("İptal", color = TextSecondary) }
             }
         )
     }
 
-    // Admin giriş yapılmamışsa sadece boş ekran göster
+    // Admin giriş yapılmamışsa giriş ekranı göster
     if (!isAdminLoggedIn) {
         Box(
             modifier = Modifier.fillMaxSize().background(Background),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Outlined.Lock, null, tint = TextSecondary, modifier = Modifier.size(56.dp))
-                Spacer(modifier = Modifier.height(12.dp))
-                Text("Yönetici girişi gerekli", color = TextSecondary,
-                    style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-                TextButton(onClick = { showAdminLoginDialog = true }) {
-                    Text("Giriş Yap", color = Accent, fontWeight = FontWeight.Bold)
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                TextButton(onClick = { onNavigateBack() }) {
-                    Text("Geri", color = TextSecondary)
+                Icon(Icons.Outlined.Lock, null, tint = TextSecondary, modifier = Modifier.size(64.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Yönetici Paneli", color = TextPrimary,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text("Dashboard'u görüntülemek için\nyönetici girişi gereklidir.",
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = { showAdminLoginDialog = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Accent,
+                        contentColor = TextOnAccent
+                    ),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+                    modifier = Modifier.padding(horizontal = 48.dp).fillMaxWidth()
+                ) {
+                    Icon(Icons.Outlined.Lock, null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Giriş Yap", fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -206,10 +214,13 @@ fun DashboardScreen(viewModel: MainViewModel, onNavigateBack: () -> Unit = {}) {
                             val recipient = userList[selectedUserIndex]
                             showPdfEmailDialog = false
                             // PDF oluştur ve email gönder
+                            val prefs = context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+                            val companyName = prefs.getString("company_name", "") ?: ""
                             val pdfService = com.ekomak.performanstakippro.util.PdfReportService(context)
                             val pdfFile = pdfService.generateMonthlyReport(
                                 employee = selectedEmployee!!,
-                                records = filteredRecords
+                                records = filteredRecords,
+                                companyName = companyName
                             )
                             if (pdfFile != null) {
                                 pdfService.sendEmail(

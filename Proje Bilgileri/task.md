@@ -1,28 +1,40 @@
-# Performans Takip Pro — Büyük Düzeltme
+# Performans Takip Pro — v1.2.0 Planı
 
-## Faz 1: Veri Katmanı (Google Sheets Entegrasyonu) ✅
-- [x] MainViewModel oluştur (employees, workTypes, departments, records)
-- [x] EntryScreen: DatePicker, Personel/İşTürü seçici, Kaydet
-- [x] HistoryScreen: Gerçek kayıtlar, Düzenle/Sil, mini grafik
-- [x] DashboardScreen: Gerçek veriden hesaplama
+## Tamamlanan Fazlar ✅
+- Faz 1: Google Sheets entegrasyonu (MainViewModel, tüm ekranlar)
+- Faz 2: Scroll düzeltme, tarih formatı, kompakt kartlar, düzenle dialogu
+- Faz 3: Admin girişi (Dashboard'a taşındı)
+- Faz 4: Versiyon 1.1.0, APK adlandırma
+- Faz 5: **v1.2.0 Final Polish** (HorizontalPager, Flickering fix, Swipe Nav) ✅
 
-## Faz 2: Görsel Düzeltmeler & Scroll Sorunları ✅
-- [x] Alt menü label kırpılma düzeltmesi (navigationBarsPadding)
-- [x] BottomSheet scroll sorunu (LazyColumn)
-- [x] Geçmiş kart yüksekliği azalt (tek satır layout)
-- [x] Dashboard kart yüksekliği azalt + tarih formatı düzelt (DateUtils)
-- [x] Şirket adı alanı ekle (varsayılan "-")
-- [x] Header ikonu büyüt (52dp)
-- [x] Seçili personeli hatırla (SharedPreferences)
-- [x] Düzenle butonu çalışsın (EditRecordDialog)
-- [x] Adaptive icon eklendi (ic_launcher_foreground + XML)
+## Görevler (v1.2.0)
 
-## Faz 3: Admin Girişi ✅
-- [x] AdminLoginDialog (EKO / EKO2026)
-- [x] Beni hatırla checkbox
-- [x] Admin durumu göster + Çıkış butonu
+### 1. Dashboard Admin Erişim Kontrolü ✅
+- [x] Dashboard ekranına giriş için admin şifresi iste (EKO / EKO2026)
+- [x] Admin giriş dialogunu SettingsScreen'den kaldır, Dashboard'a taşı
+- [x] Giriş yapılmadıysa Dashboard yerine şifre ekranı göster
+- [x] Beni hatırla özelliği
 
-## Faz 4: İnce Ayarlar ✅
-- [x] APK adı: PerformansTakipPro-v1.1.0
-- [x] Versiyon: 1.1.0 (versionCode: 2)
-- [x] DateUtils.kt oluşturuldu (JS Date string parse)
+### 2. Ana Ekran (EntryScreen) Kompaktlık ✅
+- [x] Miktar alanı font veya yükseklik ayarla (sayı sığmıyor)
+- [x] Form öğeleri arası boşluk azalt (Tarih/Personel/Bölüm/İşTürü)
+- [x] Alt menü yüksekliği azalt (HorizontalPager kullanıldı)
+
+### 3. Geçmiş Ekranı Filtreleme ✅
+- [x] Ayarlarda seçili personele göre kayıtları filtrele
+
+### 4. Şirket Adı Düzenleme ✅
+- [x] Şirket adını değiştirebilir dialogu ekle
+- [x] SharedPreferences'a kaydet
+
+### 5. Karanlık Mod Düzeltmeleri ✅
+- [x] Hakkında ekranı "İletişime Geç" buton rengi düzelt
+
+### 6. Dil Seçimi ✅
+- [x] Kaldırıldı (şimdilik gerek yok)
+
+### 7. PDF Rapor ve Mail ✅
+- [x] Dashboard'da seçili personelin raporunu PDF olarak oluştur
+- [x] KULLANICILAR tablosundan personel seçimi
+- [x] PDF'i mail olarak gönder (İzin sorunu yok)
+- [x] PDF rapora şirket adını ekle (v1.2.0)
