@@ -68,3 +68,33 @@ Performans Takip Pro, üretim ve hizmet sektöründe çalışan personelin günl
 
 ---
 *Tüm hakları saklıdır. İzinsiz kopyalanamaz, dağıtılamaz.*
+
+### [ Ekran Görüntüleri ]
+
+![Screenshot_2026-03-18-12-12-58-634_com ekomak performanstakippro](https://github.com/user-attachments/assets/e38e5cb5-70b5-4408-9177-8cd4c482d680)
+
+![Screenshot_2026-03-18-12-15-43-221_com ekomak performanstakippro](https://github.com/user-attachments/assets/5f3e4280-a61d-4ca6-b38c-c2fb608282f8)
+
+![Screenshot_2026-03-18-12-14-48-830_com ekomak performanstakippro](https://github.com/user-attachments/assets/bcb1da21-9a5b-42e2-83bb-c5cb51c6db4c)
+
+![Screenshot_2026-03-18-12-15-45-697_com ekomak performanstakippro](https://github.com/user-attachments/assets/b4e8ebe0-debd-49a8-850e-064003cb48ce)
+
+![Screenshot_2026-03-18-12-13-43-538_com ekomak performanstakippro](https://github.com/user-attachments/assets/1b2ffc49-5eb0-4264-90b0-cd8b88a0b9da)
+
+![Screenshot_2026-03-18-12-15-47-836_com ekomak performanstakippro](https://github.com/user-attachments/assets/8cfecf4d-ebda-460c-a482-40e9a1d730d5)
+
+![Screenshot_2026-03-18-12-13-48-437_com ekomak performanstakippro](https://github.com/user-attachments/assets/6766e811-5dec-48cd-9e38-9802ab0642d4)
+
+![Screenshot_2026-03-18-12-15-03-788_com ekomak performanstakippro](https://github.com/user-attachments/assets/85e81a98-6e2f-4fa1-9322-7780997b9bed)
+
+![Screenshot_2026-03-18-12-16-01-642_com ekomak performanstakippro](https://github.com/user-attachments/assets/a1dbb46f-b3a2-4eba-873b-3843df854cd2)
+
+
+
+
+
+
+
+
+
+
