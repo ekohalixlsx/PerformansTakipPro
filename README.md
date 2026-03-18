@@ -68,7 +68,6 @@ Uygulama, verilerini Google Sheets üzerinde saklar. Kurulum için:
 3. Apps Script kodunu yapıştırıp Web Uygulaması olarak dağıtın
 4. URL'yi uygulamadaki Ayarlar bölümüne girin
 
-> Detaylı kurulum için `Proje Bilgileri/Google_Sheets_Kurulum_Rehberi.md` dosyasına bakın.
 
 ## 👨‍💻 Geliştirici
 
