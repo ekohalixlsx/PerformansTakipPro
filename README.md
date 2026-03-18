@@ -4,7 +4,7 @@
 
 ## 📱 Uygulama Hakkında
 
-Performans Takip Pro, üretim ve hizmet sektöründe çalışan personelin günlük yaptığı işleri kayıt altına alır, geçmişe dönük takip sağlar ve yöneticilere performans analizleri sunar. Veriler güvenli şekilde Google Sheets üzerinde saklanır.
+Performans Takip Pro, üretim ve hizmet sektöründe çalışan personelin günlük yaptığı işleri kayıt altına alır, geçmişe dönük takip sağlar ve yöneticilere performans analizleri sunar. Veriler güvenli şekilde saklanır.
 
 ## 🚀 Özellikler
 
@@ -59,14 +59,6 @@ Performans Takip Pro, üretim ve hizmet sektöründe çalışan personelin günl
 2. "Giriş Yap" butonuna tıklayın
 3. Yönetici bilgilerinizi girin
 4. Performans analizlerini inceleyin, PDF rapor oluşturup e-posta ile gönderin
-
-## 📦 Google Sheets Bağlantısı
-
-Uygulama, verilerini Google Sheets üzerinde saklar. Kurulum için:
-1. Google Drive'da yeni bir E-Tablo oluşturun
-2. Gerekli sayfa sekmelerini ekleyin (PERSONEL, KAYITLAR, Islemler, Bolumler, KULLANICILAR)
-3. Apps Script kodunu yapıştırıp Web Uygulaması olarak dağıtın
-4. URL'yi uygulamadaki Ayarlar bölümüne girin
 
 
 ## 👨‍💻 Geliştirici
